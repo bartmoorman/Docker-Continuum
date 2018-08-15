@@ -5,7 +5,7 @@ $continuum = new Continuum(true, true, true, false);
 <!DOCTYPE html>
 <html lang='en'>
   <head>
-    <title>Continuum - Endpoints</title>
+    <title>Continuum - Monitors</title>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
     <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css' integrity='sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB' crossorigin='anonymous'>
@@ -21,20 +21,20 @@ include_once('header.php');
         <thead>
           <tr>
             <th><button type='button' class='btn btn-sm btn-outline-success id-add'>Add</button></th>
-            <th>Endpoint ID</th>
-            <th>Endpoint Name</th>
+            <th>Monitor ID</th>
+            <th>Monitor Name</th>
             <th>URL</th>
           </tr>
         </thead>
         <tbody>
 <?php
-foreach ($continuum->getObjects('endpoints') as $endpoint) {
-  $tableClass = $endpoint['disabled'] ? 'text-warning' : 'table-default';
+foreach ($continuum->getObjects('monitors') as $monitor) {
+  $tableClass = $monitor['disabled'] ? 'text-warning' : 'table-default';
   echo "          <tr class='{$tableClass}'>" . PHP_EOL;
-  echo "            <td><button type='button' class='btn btn-sm btn-outline-info id-details' data-endpoint_id='{$endpoint['endpoint_id']}'>Details</button></td>" . PHP_EOL;
-  echo "            <td>{$endpoint['endpoint_id']}</td>" . PHP_EOL;
-  echo "            <td>{$endpoint['name']}</td>" . PHP_EOL;
-  echo "            <td>{$endpoint['url']}</td>" . PHP_EOL;
+  echo "            <td><button type='button' class='btn btn-sm btn-outline-info id-details' data-monitor_id='{$monitor['monitor_id']}'>Details</button></td>" . PHP_EOL;
+  echo "            <td>{$monitor['monitor_id']}</td>" . PHP_EOL;
+  echo "            <td>{$monitor['name']}</td>" . PHP_EOL;
+  echo "            <td>{$monitor['url']}</td>" . PHP_EOL;
   echo "          </tr>" . PHP_EOL;
 }
 ?>
@@ -51,7 +51,7 @@ foreach ($continuum->getObjects('endpoints') as $endpoint) {
             <div class='modal-body'>
               <div class='form-row'>
                 <div class='form-group col'>
-                  <label>Endpoint Name <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <label>Monitor Name <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
                   <input class='form-control' id='name' type='text' name='name' required>
                 </div>
               </div>
@@ -63,8 +63,28 @@ foreach ($continuum->getObjects('endpoints') as $endpoint) {
               </div>
               <div class='form-row'>
                 <div class='form-group col'>
-                  <label>API Key <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
-                  <input class='form-control' id='api_key' type='text' name='api_key' minlength='40' maxlength='40' pattern='[A-Za-z0-9]{40}' required>
+                  <label>Interval <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <input class='form-control id-interval' id='interval' type='number' name='interval' min='1' max='60' step='1' required>
+                </div>
+                <div class='form-group col'>
+                  <label>Timeout <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <input class='form-control id-timeout' id='timeout' type='number' name='timeout' min='0.1' max='5.0' step='0.1' required>
+                </div>
+              </div>
+              <div class='form-row'>
+                <div class='form-group col'>
+                  <label>Allow Redirects <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <select class='form-control' id='allow_redirects' name='allow_redirects' required>
+                    <option value='true'>true</option>
+                    <option value='false'>false</option>
+                  </select>
+                </div>
+                <div class='form-group col'>
+                  <label>Verify SSL <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <select class='form-control' id='verify' name='verify' required>
+                    <option value='true'>true</option>
+                    <option value='false'>false</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -86,28 +106,33 @@ foreach ($continuum->getObjects('endpoints') as $endpoint) {
         $('[data-toggle="tooltip"]').tooltip();
 
         $('button.id-add').click(function() {
-          $('h5.modal-title').text('Add Endpoint');
-          $('form').removeData('endpoint_id').data('func', 'createEndpoint').trigger('reset');
-          $('button.id-modify').addClass('d-none').removeData('endpoint_id');
+          $('h5.modal-title').text('Add Monitor');
+          $('form').removeData('monitor_id').data('func', 'createMonitor').trigger('reset');
+          $('input.id-interval').val(5);
+          $('input.id-timeout').val(1.0);
+          $('button.id-modify').addClass('d-none').removeData('monitor_id');
           $('button.id-submit').removeClass('btn-info').addClass('btn-success').text('Add');
           $('div.id-modal').modal('toggle');
         });
 
         $('button.id-details').click(function() {
-          $('h5.modal-title').text('Endpoint Details');
-          $('form').removeData('endpoint_id').data('func', 'updateEndpoint').trigger('reset');
-          $('button.id-modify').removeClass('d-none').removeData('endpoint_id');
+          $('h5.modal-title').text('Monitor Details');
+          $('form').removeData('monitor_id').data('func', 'updateMonitor').trigger('reset');
+          $('button.id-modify').removeClass('d-none').removeData('monitor_id');
           $('button.id-submit').removeClass('btn-success').addClass('btn-info').text('Save');
-          $.get('src/action.php', {"func": "getObjectDetails", "type": "endpoint", "value": $(this).data('endpoint_id')})
+          $.get('src/action.php', {"func": "getObjectDetails", "type": "monitor", "value": $(this).data('monitor_id')})
             .done(function(data) {
               if (data.success) {
-                endpoint = data.data;
-                $('form').data('endpoint_id', endpoint.endpoint_id);
-                $('#name').val(endpoint.name);
-                $('#url').val(endpoint.url);
-                $('#api_key').val(endpoint.api_key);
-                $('button.id-modify.id-volatile').data('action', endpoint.disabled ? 'enable' : 'disable').text(endpoint.disabled ? 'Enable' : 'Disable');
-                $('button.id-modify').data('endpoint_id', endpoint.endpoint_id);
+                monitor = data.data;
+                $('form').data('monitor_id', monitor.monitor_id);
+                $('#name').val(monitor.name);
+                $('#url').val(monitor.url);
+                $('#interval').val(monitor.interval);
+                $('#timeout').val(monitor.timeout);
+                $('#allow_redirects').val(monitor.allow_redirects);
+                $('#verify').val(monitor.verify);
+                $('button.id-modify.id-volatile').data('action', monitor.disabled ? 'enable' : 'disable').text(monitor.disabled ? 'Enable' : 'Disable');
+                $('button.id-modify').data('monitor_id', monitor.monitor_id);
                 $('div.id-modal').modal('toggle');
               }
             })
@@ -117,8 +142,8 @@ foreach ($continuum->getObjects('endpoints') as $endpoint) {
         });
 
         $('button.id-modify').click(function() {
-          if (confirm(`Want to ${$(this).data('action').toUpperCase()} endpoint ${$(this).data('endpoint_id')}?`)) {
-            $.get('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "endpoint_id", "value": $(this).data('endpoint_id')})
+          if (confirm(`Want to ${$(this).data('action').toUpperCase()} monitor ${$(this).data('monitor_id')}?`)) {
+            $.get('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "monitor_id", "value": $(this).data('monitor_id')})
               .done(function(data) {
                 if (data.success) {
                   location.reload();
@@ -132,7 +157,7 @@ foreach ($continuum->getObjects('endpoints') as $endpoint) {
 
         $('form').submit(function(e) {
           e.preventDefault();
-          $.post('src/action.php', {"func": $(this).data('func'), "endpoint_id": $(this).data('endpoint_id'), "name": $('#name').val(), "url": $('#url').val(), "api_key": $('#api_key').val()})
+          $.post('src/action.php', {"func": $(this).data('func'), "monitor_id": $(this).data('monitor_id'), "name": $('#name').val(), "url": $('#url').val(), "interval": $('#interval').val(), "timeout": $('#timeout').val(), "allow_redirects": $('#allow_redirects').val(), "verify": $('#verify').val()})
             .done(function(data) {
               if (data.success) {
                 location.reload();

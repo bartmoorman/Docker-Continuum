@@ -90,9 +90,20 @@ CREATE TABLE IF NOT EXISTS `endpoints` (
   `api_key` TEXT NOT NULL,
   `disabled` INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS `monitors` (
+  `monitor_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` TEXT NOT NULL,
+  `url` TEXT NOT NULL,
+  `interval` INTEGER NOT NULL DEFAULT 5,
+  `timeout` NUMERIC NOT NULL DEFAULT 1.0,
+  `allow_redirects` INTEGER NOT NULL DEFAULT 1,
+  `verify` INTEGER NOT NULL DEFAULT 1,
+  `disabled` INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS `readings` (
   `reading_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
+  `monitor_id` INTEGER NOT NULL,
   `endpoint_id` INTEGER NOT NULL
 );
 EOQ;
@@ -168,6 +179,9 @@ EOQ;
         break;
       case 'endpoint_id':
         $table = 'endpoints';
+        break;
+      case 'monitor_id':
+        $table = 'monitors';
         break;
     }
     $query = <<<EOQ
@@ -258,6 +272,31 @@ EOQ;
     return false;
   }
 
+  public function createMonitor($name, $url, $interval, $timeout, $allow_redirects, $verify) {
+    $url = $this->dbConn->escapeString($url);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `monitors`
+WHERE `url` = '{$url}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $interval = $this->dbConn->escapeString($interval);
+      $timeout = $this->dbConn->escapeString($timeout);
+      $allow_redirects = $this->dbConn->escapeString($allow_redirects);
+      $verify = $this->dbConn->escapeString($verify);
+      $query = <<<EOQ
+INSERT
+INTO `monitors` (`name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`)
+VALUES ('{$name}', '{$url}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public function updateUser($user_id, $username, $password = null, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role) {
     $user_id = $this->dbConn->escapeString($user_id);
     $username = $this->dbConn->escapeString($username);
@@ -334,6 +373,39 @@ EOQ;
     return false;
   }
 
+  public function updateMonitor($monitor_id, $name, $url, $interval, $timeout, $allow_redirects, $verify) {
+    $monitor_id = $this->dbConn->escapeString($monitor_id);
+    $url = $this->dbConn->escapeString($url);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `monitors`
+WHERE `monitor_id` != '{$monitor_id}'
+AND `url` = '{$url}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $interval = $this->dbConn->escapeString($interval);
+      $timeout = $this->dbConn->escapeString($timeout);
+      $allow_redirects = $this->dbConn->escapeString($allow_redirects);
+      $verify = $this->dbConn->escapeString($verify);
+      $query = <<<EOQ
+UPDATE `monitors`
+SET
+  `name` = '{$name}',
+  `url` = '{$url}',
+  `interval` = '{$interval}',
+  `timeout` = '{$timeout}',
+  `allow_redirects` = '{$allow_redirects}',
+  `verify` = '{$verify}'
+WHERE `monitor_id` = '{$monitor_id}';
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public function modifyObject($action, $type, $value, $extra_type = null, $extra_value = null) {
     $type = $this->dbConn->escapeString($type);
     $value = $this->dbConn->escapeString($value);
@@ -347,6 +419,10 @@ EOQ;
         break;
       case 'endpoint_id':
         $table = 'endpoints';
+        $extra_table = 'readings';
+        break;
+      case 'monitor_id':
+        $table = 'monitors';
         $extra_table = 'readings';
         break;
     }
@@ -398,6 +474,13 @@ FROM `endpoints`
 ORDER BY `name`;
 EOQ;
         break;
+      case 'monitors':
+        $query = <<<EOQ
+SELECT `monitor_id`, `name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+FROM `monitors`
+ORDER BY `name`;
+EOQ;
+        break;
     }
     if ($objects = $this->dbConn->query($query)) {
       $output = [];
@@ -424,6 +507,13 @@ EOQ;
 SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
 FROM `endpoints`
 WHERE `endpoint_id` = '{$value}';
+EOQ;
+        break;
+      case 'monitor':
+        $query = <<<EOQ
+SELECT `monitor_id`, `name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+FROM `monitors`
+WHERE `monitor_id` = '{$value}';
 EOQ;
         break;
     }
