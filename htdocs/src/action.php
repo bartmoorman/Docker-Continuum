@@ -39,6 +39,21 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
+  case 'createEndpoint':
+    if ($continuum->isValidSession() && $continuum->isAdmin()) {
+      if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
+        $output['success'] = $continuum->createEndpoint($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+      } else {
+        header('HTTP/1.1 400 Bad Request');
+        $output['success'] = false;
+        $output['message'] = 'No name supplied';
+      }
+    } else {
+      header('HTTP/1.1 403 Forbidden');
+      $output['success'] = false;
+      $output['message'] = 'Unauthorized';
+    }
+    break;
   case 'updateUser':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['user_id']) && !empty($_REQUEST['username']) && !empty($_REQUEST['first_name']) && !empty($_REQUEST['role'])) {
@@ -52,6 +67,22 @@ switch ($_REQUEST['func']) {
         $pushover_sound = !empty($_REQUEST['pushover_sound']) ? $_REQUEST['pushover_sound'] : null;
         $output['success'] = $continuum->updateUser($_REQUEST['user_id'], $_REQUEST['username'], $password, $_REQUEST['first_name'], $last_name, $pushover_user, $pushover_token, $pushover_priority, $pushover_retry, $pushover_expire, $pushover_sound, $_REQUEST['role']);
         $log['user_id'] = $_REQUEST['user_id'];
+      } else {
+        header('HTTP/1.1 400 Bad Request');
+        $output['success'] = false;
+        $output['message'] = 'Missing arguments';
+      }
+    } else {
+      header('HTTP/1.1 403 Forbidden');
+      $output['success'] = false;
+      $output['message'] = 'Unauthorized';
+    }
+    break;
+  case 'updateEndpoint':
+    if ($continuum->isValidSession() && $continuum->isAdmin()) {
+      if (!empty($_REQUEST['endpoint_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
+        $output['success'] = $continuum->updateEndpoint($_REQUEST['endpoint_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+        $log['endpoint_id'] = $_REQUEST['endpoint_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;

@@ -83,6 +83,18 @@ CREATE TABLE IF NOT EXISTS `events` (
   `message` BLOB,
   `remote_addr` INTEGER
 );
+CREATE TABLE IF NOT EXISTS `endpoints` (
+  `endpoint_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` TEXT NOT NULL,
+  `url` TEXT NOT NULL,
+  `api_key` TEXT NOT NULL,
+  `disabled` INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS `readings` (
+  `reading_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
+  `endpoint_id` INTEGER NOT NULL
+);
 EOQ;
     if ($this->dbConn->exec($query)) {
       return true;
@@ -154,6 +166,9 @@ EOQ;
       case 'user_id':
         $table = 'users';
         break;
+      case 'endpoint_id':
+        $table = 'endpoints';
+        break;
     }
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -221,6 +236,28 @@ EOQ;
     return false;
   }
 
+  public function createEndpoint($name, $url, $api_key) {
+    $url = $this->dbConn->escapeString($url);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `endpoints`
+WHERE `url` = '{$url}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $api_key = $this->dbConn->escapeString($api_key);
+      $query = <<<EOQ
+INSERT
+INTO `endpoints` (`name`, `url`, `api_key`)
+VALUES ('{$name}', '{$url}', '{$api_key}');
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public function updateUser($user_id, $username, $password = null, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role) {
     $user_id = $this->dbConn->escapeString($user_id);
     $username = $this->dbConn->escapeString($username);
@@ -270,6 +307,33 @@ EOQ;
     return false;
   }
 
+  public function updateEndpoint($endpoint_id, $name, $url, $api_key) {
+    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+    $url = $this->dbConn->escapeString($url);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `endpoints`
+WHERE `endpoint_id` != '{$endpoint_id}'
+AND `url` = '{$url}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $api_key = $this->dbConn->escapeString($api_key);
+      $query = <<<EOQ
+UPDATE `endpoints`
+SET
+  `name` = '{$name}',
+  `url` = '{$url}',
+  `api_key` = '{$api_key}'
+WHERE `endpoint_id` = '{$endpoint_id}';
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public function modifyObject($action, $type, $value, $extra_type = null, $extra_value = null) {
     $type = $this->dbConn->escapeString($type);
     $value = $this->dbConn->escapeString($value);
@@ -280,6 +344,10 @@ EOQ;
       case 'user_id':
         $table = 'users';
         $extra_table = 'events';
+        break;
+      case 'endpoint_id':
+        $table = 'endpoints';
+        $extra_table = 'readings';
         break;
     }
     switch ($action) {
@@ -323,6 +391,13 @@ FROM `users`
 ORDER BY `last_name`, `first_name`;
 EOQ;
         break;
+      case 'endpoints':
+        $query = <<<EOQ
+SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
+FROM `endpoints`
+ORDER BY `name`;
+EOQ;
+        break;
     }
     if ($objects = $this->dbConn->query($query)) {
       $output = [];
@@ -342,6 +417,13 @@ EOQ;
 SELECT `user_id`, `username`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, `disabled`
 FROM `users`
 WHERE `user_id` = '{$value}';
+EOQ;
+        break;
+      case 'endpoint':
+        $query = <<<EOQ
+SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
+FROM `endpoints`
+WHERE `endpoint_id` = '{$value}';
 EOQ;
         break;
     }
