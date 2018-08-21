@@ -64,11 +64,21 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
               <div class='form-row'>
                 <div class='form-group col'>
                   <label>Interval <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
-                  <input class='form-control id-interval' id='interval' type='number' name='interval' min='1' max='60' step='1' required>
+                  <div class='input-group'>
+                    <input class='form-control id-interval' id='interval' type='number' name='interval' min='1' max='60' step='1' required>
+                    <div class='input-group-append'>
+                      <span class='input-group-text'>min</span>
+                    </div>
+                  </div>
                 </div>
                 <div class='form-group col'>
                   <label>Timeout <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
-                  <input class='form-control id-timeout' id='timeout' type='number' name='timeout' min='0.1' max='5.0' step='0.1' required>
+                  <div class='input-group'>
+                    <input class='form-control id-timeout' id='timeout' type='number' name='timeout' min='0.1' max='5.0' step='0.1' required>
+                    <div class='input-group-append'>
+                      <span class='input-group-text'>sec</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class='form-row'>

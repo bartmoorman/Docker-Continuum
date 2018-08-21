@@ -103,8 +103,10 @@ CREATE TABLE IF NOT EXISTS `monitors` (
 CREATE TABLE IF NOT EXISTS `readings` (
   `reading_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
+  `endpoint_id` INTEGER NOT NULL,
   `monitor_id` INTEGER NOT NULL,
-  `endpoint_id` INTEGER NOT NULL
+  `total_seconds` INTEGER,
+  `status_code` NUMERIC
 );
 EOQ;
     if ($this->dbConn->exec($query)) {
