@@ -165,6 +165,29 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
+  case 'getReadings':
+    if ($continuum->isValidSession()) {
+      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['hours'])) {
+        $endpoint_id = !empty($_REQUEST['endpoint_id']) ? $_REQUEST['endpoint_id'] : null;
+        if ($output['data'] = $continuum->getReadings($endpoint_id, $_REQUEST['monitor_id'], $_REQUEST['hours'])) {
+          $output['success'] = true;
+          $putEvent = false;
+        } else {
+          $output['success'] = false;
+          $log['monitor_id'] = $_REQUEST['monitor_id'];
+          $log['hours'] = $_REQUEST['hours'];
+        }
+      } else {
+        header('HTTP/1.1 400 Bad Request');
+        $output['success'] = false;
+        $output['message'] = 'Missing arguments';
+      }
+    } else {
+      header('HTTP/1.1 403 Forbidden');
+      $output['success'] = false;
+      $output['message'] = 'Unauthorized';
+    }
+    break;
 }
 
 if ($putEvent) {

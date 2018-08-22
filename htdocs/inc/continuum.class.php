@@ -590,6 +590,28 @@ EOQ;
     return false;
   }
 
+  public function getReadings($endpoint_id = null, $monitor_id, $hours) {
+    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+    $monitor_id = $this->dbConn->escapeString($monitor_id);
+    $hours = $this->dbConn->escapeString($hours);
+    $query = <<<EOQ
+SELECT STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
+FROM `readings`
+WHERE `monitor_id` = '{$monitor_id}'
+AND `date` > STRFTIME('%s', 'now', '-{$hours} hours')
+GROUP BY DATETIME((`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch')
+ORDER BY `date`;
+EOQ;
+    if ($readings = $this->dbConn->query($query)) {
+      $output = [];
+      while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
+        $output[] = $reading;
+      }
+      return $output;
+    }
+    return false;
+  }
+
   public function getSounds() {
     if ($result = $this->memcacheConn->get('pushoverSounds')) {
       return json_decode($result)->sounds;
