@@ -83,8 +83,8 @@ CREATE TABLE IF NOT EXISTS `events` (
   `message` BLOB,
   `remote_addr` INTEGER
 );
-CREATE TABLE IF NOT EXISTS `endpoints` (
-  `endpoint_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS `edges` (
+  `edge_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `url` TEXT NOT NULL,
   `api_key` TEXT NOT NULL,
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `monitors` (
   `monitor_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `url` TEXT NOT NULL,
-  `endpoints` INTEGER NOT NULL DEFAULT 2,
+  `edges` INTEGER NOT NULL DEFAULT 2,
   `interval` INTEGER NOT NULL DEFAULT 5,
   `timeout` NUMERIC NOT NULL DEFAULT 1.0,
   `allow_redirects` INTEGER NOT NULL DEFAULT 1,
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `monitors` (
 CREATE TABLE IF NOT EXISTS `readings` (
   `reading_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
-  `endpoint_id` INTEGER NOT NULL,
+  `edge_id` INTEGER NOT NULL,
   `monitor_id` INTEGER NOT NULL,
   `total_seconds` NUMERIC,
   `status_code` INTEGER,
@@ -181,8 +181,8 @@ EOQ;
       case 'user_id':
         $table = 'users';
         break;
-      case 'endpoint_id':
-        $table = 'endpoints';
+      case 'edge_id':
+        $table = 'edges';
         break;
       case 'monitor_id':
         $table = 'monitors';
@@ -254,11 +254,11 @@ EOQ;
     return false;
   }
 
-  public function createEndpoint($name, $url, $api_key) {
+  public function createEdge($name, $url, $api_key) {
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
-FROM `endpoints`
+FROM `edges`
 WHERE `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
@@ -266,7 +266,7 @@ EOQ;
       $api_key = $this->dbConn->escapeString($api_key);
       $query = <<<EOQ
 INSERT
-INTO `endpoints` (`name`, `url`, `api_key`)
+INTO `edges` (`name`, `url`, `api_key`)
 VALUES ('{$name}', '{$url}', '{$api_key}');
 EOQ;
       if ($this->dbConn->exec($query)) {
@@ -276,7 +276,7 @@ EOQ;
     return false;
   }
 
-  public function createMonitor($name, $url, $endpoints, $interval, $timeout, $allow_redirects, $verify) {
+  public function createMonitor($name, $url, $edges, $interval, $timeout, $allow_redirects, $verify) {
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -285,15 +285,15 @@ WHERE `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
-      $endpoints = $this->dbConn->escapeString($endpoints);
+      $edges = $this->dbConn->escapeString($edges);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
       $allow_redirects = $this->dbConn->escapeString($allow_redirects);
       $verify = $this->dbConn->escapeString($verify);
       $query = <<<EOQ
 INSERT
-INTO `monitors` (`name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`)
-VALUES ('{$name}', '{$url}', '{$endpoints}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
+INTO `monitors` (`name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`)
+VALUES ('{$name}', '{$url}', '{$edges}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -351,25 +351,25 @@ EOQ;
     return false;
   }
 
-  public function updateEndpoint($endpoint_id, $name, $url, $api_key) {
-    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+  public function updateEdge($edge_id, $name, $url, $api_key) {
+    $edge_id = $this->dbConn->escapeString($edge_id);
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
-FROM `endpoints`
-WHERE `endpoint_id` != '{$endpoint_id}'
+FROM `edges`
+WHERE `edge_id` != '{$edge_id}'
 AND `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
       $api_key = $this->dbConn->escapeString($api_key);
       $query = <<<EOQ
-UPDATE `endpoints`
+UPDATE `edges`
 SET
   `name` = '{$name}',
   `url` = '{$url}',
   `api_key` = '{$api_key}'
-WHERE `endpoint_id` = '{$endpoint_id}';
+WHERE `edge_id` = '{$edge_id}';
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -378,7 +378,7 @@ EOQ;
     return false;
   }
 
-  public function updateMonitor($monitor_id, $name, $url, $endpoints, $interval, $timeout, $allow_redirects, $verify) {
+  public function updateMonitor($monitor_id, $name, $url, $edges, $interval, $timeout, $allow_redirects, $verify) {
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
@@ -389,7 +389,7 @@ AND `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
-      $endpoints = $this->dbConn->escapeString($endpoints);
+      $edges = $this->dbConn->escapeString($edges);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
       $allow_redirects = $this->dbConn->escapeString($allow_redirects);
@@ -399,7 +399,7 @@ UPDATE `monitors`
 SET
   `name` = '{$name}',
   `url` = '{$url}',
-  `endpoints` = '{$endpoints}',
+  `edges` = '{$edges}',
   `interval` = '{$interval}',
   `timeout` = '{$timeout}',
   `allow_redirects` = '{$allow_redirects}',
@@ -424,8 +424,8 @@ EOQ;
         $table = 'users';
         $extra_table = 'events';
         break;
-      case 'endpoint_id':
-        $table = 'endpoints';
+      case 'edge_id':
+        $table = 'edges';
         $extra_table = 'readings';
         break;
       case 'monitor_id':
@@ -474,16 +474,16 @@ FROM `users`
 ORDER BY `last_name`, `first_name`;
 EOQ;
         break;
-      case 'endpoints':
+      case 'edges':
         $query = <<<EOQ
-SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
-FROM `endpoints`
+SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+FROM `edges`
 ORDER BY `name`;
 EOQ;
         break;
       case 'monitors':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 ORDER BY `name`;
 EOQ;
@@ -509,16 +509,16 @@ FROM `users`
 WHERE `user_id` = '{$value}';
 EOQ;
         break;
-      case 'endpoint':
+      case 'edge':
         $query = <<<EOQ
-SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
-FROM `endpoints`
-WHERE `endpoint_id` = '{$value}';
+SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+FROM `edges`
+WHERE `edge_id` = '{$value}';
 EOQ;
         break;
       case 'monitor':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 WHERE `monitor_id` = '{$value}';
 EOQ;
@@ -577,16 +577,16 @@ EOQ;
     return false;
   }
 
-  public function putReading($endpoint_id, $monitor_id, $total_seconds = null, $status_code = null, $reason) {
-    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+  public function putReading($edge_id, $monitor_id, $total_seconds = null, $status_code = null, $reason) {
+    $edge_id = $this->dbConn->escapeString($edge_id);
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $total_seconds = $this->dbConn->escapeString($total_seconds);
     $status_code = $this->dbConn->escapeString($status_code);
     $reason = $this->dbConn->escapeString($reason);
     $query = <<<EOQ
 INSERT
-INTO `readings` (`endpoint_id`, `monitor_id`, `total_seconds`, `status_code`, `reason`)
-VALUES ('{$endpoint_id}', '{$monitor_id}', '{$total_seconds}', '{$status_code}', '{$reason}')
+INTO `readings` (`edge_id`, `monitor_id`, `total_seconds`, `status_code`, `reason`)
+VALUES ('{$edge_id}', '{$monitor_id}', '{$total_seconds}', '{$status_code}', '{$reason}')
 EOQ;
     if ($this->dbConn->exec($query)) {
       return true;
@@ -629,19 +629,19 @@ EOQ;
     return false;
   }
 
-  public function getRandomEndpoints($limit = 2) {
+  public function getRandomEdges($limit = 2) {
     $limit = $this->dbConn->escapeString($limit);
     $query = <<<EOQ
-SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
-FROM `endpoints`
+SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+FROM `edges`
 WHERE NOT `disabled`
 ORDER BY RANDOM()
 LIMIT {$limit};
 EOQ;
-    if ($endpoints = $this->dbConn->query($query)) {
+    if ($edges = $this->dbConn->query($query)) {
       $output = [];
-      while ($endpoint = $endpoints->fetchArray(SQLITE3_ASSOC)) {
-        $output[] = $endpoint;
+      while ($edge = $edges->fetchArray(SQLITE3_ASSOC)) {
+        $output[] = $edge;
       }
       return $output;
     }

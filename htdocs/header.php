@@ -5,7 +5,7 @@ if ($continuum instanceof Continuum) {
   echo "      <button class='btn btn-sm btn-outline-success mr-auto id-nav' data-href='{$homeLoc}'>Home</button>" . PHP_EOL;
   if ($continuum->isAdmin()) {
     echo "      <button class='btn btn-sm btn-outline-info mr-2 id-nav' data-href='monitors.php'>Monitors</button>" . PHP_EOL;
-    echo "      <button class='btn btn-sm btn-outline-info mr-2 id-nav' data-href='endpoints.php'>Endpoints</button>" . PHP_EOL;
+    echo "      <button class='btn btn-sm btn-outline-info mr-2 id-nav' data-href='edges.php'>Edges</button>" . PHP_EOL;
     echo "      <button class='btn btn-sm btn-outline-info mr-2 id-nav' data-href='users.php'>Users</button>" . PHP_EOL;
     echo "      <button class='btn btn-sm btn-outline-info mr-2 id-nav' data-href='events.php'>Events</button>" . PHP_EOL;
   }

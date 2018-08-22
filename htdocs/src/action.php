@@ -39,10 +39,10 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
-  case 'createEndpoint':
+  case 'createEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $output['success'] = $continuum->createEndpoint($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+        $output['success'] = $continuum->createEdge($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -56,8 +56,8 @@ switch ($_REQUEST['func']) {
     break;
   case 'createMonitor':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['endpoints']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
-        $output['success'] = $continuum->createMonitor($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['endpoints'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
+      if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['edges']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
+        $output['success'] = $continuum->createMonitor($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['edges'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -93,11 +93,11 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
-  case 'updateEndpoint':
+  case 'updateEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['endpoint_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $output['success'] = $continuum->updateEndpoint($_REQUEST['endpoint_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
-        $log['endpoint_id'] = $_REQUEST['endpoint_id'];
+      if (!empty($_REQUEST['edge_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
+        $output['success'] = $continuum->updateEdge($_REQUEST['edge_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+        $log['edge_id'] = $_REQUEST['edge_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -111,8 +111,8 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateMonitor':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['endpoints']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
-        $output['success'] = $continuum->updateMonitor($_REQUEST['monitor_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['endpoints'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
+      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['edges']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
+        $output['success'] = $continuum->updateMonitor($_REQUEST['monitor_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['edges'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
         $log['monitor_id'] = $_REQUEST['monitor_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');

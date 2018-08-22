@@ -24,7 +24,7 @@ include_once('header.php');
             <th>Monitor ID</th>
             <th>Monitor Name</th>
             <th>URL</th>
-            <th>Endpoints</th>
+            <th>Edges</th>
             <th>Interval</th>
             <th>Timeout</th>
           </tr>
@@ -38,7 +38,7 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
   echo "            <td>{$monitor['monitor_id']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['name']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['url']}</td>" . PHP_EOL;
-  echo "            <td>{$monitor['endpoints']}</td>" . PHP_EOL;
+  echo "            <td>{$monitor['edges']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['interval']}m</td>" . PHP_EOL;
   echo "            <td>{$monitor['timeout']}s</td>" . PHP_EOL;
   echo "          </tr>" . PHP_EOL;
@@ -67,10 +67,10 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
                   <input class='form-control' id='url' type='text' name='url' required>
                 </div>
                 <div class='form-group col'>
-                  <label>Endpoints <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
-                  <select class='form-control id-endpoints' id='endpoints' name='endpoints' required>
+                  <label>Edges <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <select class='form-control id-edges' id='edges' name='edges' required>
 <?php
-for ($i = 1; $i <= $continuum->getObjectCount('endpoints'); $i++) {
+for ($i = 1; $i <= $continuum->getObjectCount('edges'); $i++) {
   echo "                    <option value='{$i}'>{$i}</option>" . PHP_EOL;
 }
 ?>
@@ -134,7 +134,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('endpoints'); $i++) {
         $('button.id-add').click(function() {
           $('h5.modal-title').text('Add Monitor');
           $('form').removeData('monitor_id').data('func', 'createMonitor').trigger('reset');
-          $('select.id-endpoints').val(2);
+          $('select.id-edges').val(2);
           $('input.id-interval').val(5);
           $('input.id-timeout').val(1.0);
           $('button.id-modify').addClass('d-none').removeData('monitor_id');
@@ -154,7 +154,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('endpoints'); $i++) {
                 $('form').data('monitor_id', monitor.monitor_id);
                 $('#name').val(monitor.name);
                 $('#url').val(monitor.url);
-                $('#endpoints').val(monitor.endpoints);
+                $('#edges').val(monitor.edges);
                 $('#interval').val(monitor.interval);
                 $('#timeout').val(monitor.timeout);
                 $('#allow_redirects').val(monitor.allow_redirects);
@@ -185,7 +185,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('endpoints'); $i++) {
 
         $('form').submit(function(e) {
           e.preventDefault();
-          $.post('src/action.php', {"func": $(this).data('func'), "monitor_id": $(this).data('monitor_id'), "name": $('#name').val(), "url": $('#url').val(), "endpoints": $('#endpoints').val(), "interval": $('#interval').val(), "timeout": $('#timeout').val(), "allow_redirects": $('#allow_redirects').val(), "verify": $('#verify').val()})
+          $.post('src/action.php', {"func": $(this).data('func'), "monitor_id": $(this).data('monitor_id'), "name": $('#name').val(), "url": $('#url').val(), "edges": $('#edges').val(), "interval": $('#interval').val(), "timeout": $('#timeout').val(), "allow_redirects": $('#allow_redirects').val(), "verify": $('#verify').val()})
             .done(function(data) {
               if (data.success) {
                 location.reload();
