@@ -105,8 +105,9 @@ CREATE TABLE IF NOT EXISTS `readings` (
   `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
   `endpoint_id` INTEGER NOT NULL,
   `monitor_id` INTEGER NOT NULL,
-  `total_seconds` INTEGER,
-  `status_code` NUMERIC
+  `total_seconds` NUMERIC,
+  `status_code` INTEGER,
+  `reason` TEXT NOT NULL
 );
 EOQ;
     if ($this->dbConn->exec($query)) {
@@ -568,6 +569,23 @@ EOQ;
         $output[] = $event;
       }
       return $output;
+    }
+    return false;
+  }
+
+  public function putReading($endpoint_id, $monitor_id, $total_seconds = null, $status_code = null, $reason) {
+    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+    $monitor_id = $this->dbConn->escapeString($monitor_id);
+    $total_seconds = $this->dbConn->escapeString($total_seconds);
+    $status_code = $this->dbConn->escapeString($status_code);
+    $reason = $this->dbConn->escapeString($reason);
+    $query = <<<EOQ
+INSERT
+INTO `readings` (`endpoint_id`, `monitor_id`, `total_seconds`, `status_code`, `reason`)
+VALUES ('{$endpoint_id}', '{$monitor_id}', '{$total_seconds}', '{$status_code}', '{$reason}')
+EOQ;
+    if ($this->dbConn->exec($query)) {
+      return true;
     }
     return false;
   }
