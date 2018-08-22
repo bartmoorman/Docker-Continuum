@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS `monitors` (
   `monitor_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `url` TEXT NOT NULL,
+  `endpoints` INTEGER NOT NULL DEFAULT 2,
   `interval` INTEGER NOT NULL DEFAULT 5,
   `timeout` NUMERIC NOT NULL DEFAULT 1.0,
   `allow_redirects` INTEGER NOT NULL DEFAULT 1,
@@ -275,7 +276,7 @@ EOQ;
     return false;
   }
 
-  public function createMonitor($name, $url, $interval, $timeout, $allow_redirects, $verify) {
+  public function createMonitor($name, $url, $endpoints, $interval, $timeout, $allow_redirects, $verify) {
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -284,14 +285,15 @@ WHERE `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $endpoints = $this->dbConn->escapeString($endpoints);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
       $allow_redirects = $this->dbConn->escapeString($allow_redirects);
       $verify = $this->dbConn->escapeString($verify);
       $query = <<<EOQ
 INSERT
-INTO `monitors` (`name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`)
-VALUES ('{$name}', '{$url}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
+INTO `monitors` (`name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`)
+VALUES ('{$name}', '{$url}', '{$endpoints}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -376,7 +378,7 @@ EOQ;
     return false;
   }
 
-  public function updateMonitor($monitor_id, $name, $url, $interval, $timeout, $allow_redirects, $verify) {
+  public function updateMonitor($monitor_id, $name, $url, $endpoints, $interval, $timeout, $allow_redirects, $verify) {
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
@@ -387,6 +389,7 @@ AND `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $endpoints = $this->dbConn->escapeString($endpoints);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
       $allow_redirects = $this->dbConn->escapeString($allow_redirects);
@@ -396,6 +399,7 @@ UPDATE `monitors`
 SET
   `name` = '{$name}',
   `url` = '{$url}',
+  `endpoints` = '{$endpoints}',
   `interval` = '{$interval}',
   `timeout` = '{$timeout}',
   `allow_redirects` = '{$allow_redirects}',
@@ -479,7 +483,7 @@ EOQ;
         break;
       case 'monitors':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 ORDER BY `name`;
 EOQ;
@@ -514,7 +518,7 @@ EOQ;
         break;
       case 'monitor':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `endpoints`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 WHERE `monitor_id` = '{$value}';
 EOQ;
@@ -590,8 +594,7 @@ EOQ;
     return false;
   }
 
-  public function getReadings($endpoint_id = null, $monitor_id, $hours) {
-    $endpoint_id = $this->dbConn->escapeString($endpoint_id);
+  public function getReadings($monitor_id, $hours) {
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $hours = $this->dbConn->escapeString($hours);
     $query = <<<EOQ
@@ -605,7 +608,7 @@ EOQ;
     if ($readings = $this->dbConn->query($query)) {
       $output = [];
       while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
-        $output[] = $reading;
+        $output[] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
       }
       return $output;
     }
@@ -622,6 +625,25 @@ EOQ;
         $this->memcacheConn->set('pushoverSounds', $result, 60 * 60 * 24);
         return json_decode($result)->sounds;
       }
+    }
+    return false;
+  }
+
+  public function getRandomEndpoints($limit = 2) {
+    $limit = $this->dbConn->escapeString($limit);
+    $query = <<<EOQ
+SELECT `endpoint_id`, `name`, `url`, `api_key`, `disabled`
+FROM `endpoints`
+WHERE NOT `disabled`
+ORDER BY RANDOM()
+LIMIT {$limit};
+EOQ;
+    if ($endpoints = $this->dbConn->query($query)) {
+      $output = [];
+      while ($endpoint = $endpoints->fetchArray(SQLITE3_ASSOC)) {
+        $output[] = $endpoint;
+      }
+      return $output;
     }
     return false;
   }

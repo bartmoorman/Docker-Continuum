@@ -26,18 +26,12 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
 }
 ?>
       </select>
-      <select class='btn btn-sm btn-outline-success mr-2 id-endpoint_id' data-storage='endpoint_id'>
-        <option value='0'>Endpoint</option>
-<?php
-foreach ($continuum->getObjects('endpoints') as $endpoint) {
-  echo "        <option value='{$endpoint['endpoint_id']}'>{$endpoint['name']}</option>" . PHP_EOL;
-}
-?>
-      </select>
       <select class='btn btn-sm btn-outline-success mr-auto id-hours' data-storage='hours'>
         <option value='0'>Period</option>
 <?php
 $periods = [
+  1 => '1 hour',
+  3 => '3 hours',
   6 => '6 hours',
   12 => '12 hours',
   24 => '1 day',
@@ -66,14 +60,50 @@ foreach ($periods as $hours => $period) {
       $(document).ready(function() {
         var timer;
         var config = {
-          type: 'line'
+          type: 'line',
+          data: {
+            datasets: [{
+              backgroundColor: 'rgba(255, 0, 0, 0.3)',
+              borderColor: 'rgb(255, 0, 0)',
+              borderWidth: 1,
+              pointRadius: 2
+            }]
+          },
+          options: {
+            legend: {display: false},
+            scales: {
+              xAxes: [{display: true, type: 'time'}],
+              yAxes: [{
+                display: true,
+                position: 'left',
+                scaleLabel: {display: true, labelString: 'Milliseconds'}
+              }]
+            }
+          }
         };
         var chart = new Chart($('#chart'), config);
 
         function getReadings() {
+          $.get('src/action.php', {"func": "getReadings", "monitor_id": $('select.id-monitor_id').val(), "hours": $('select.id-hours').val()})
+            .done(function(data) {
+              if (data.success) {
+                config.data.datasets[0].data = data.data;
+                chart.update();
+              }
+            })
+            .fail(function(jqxhr, textStatus, errorThrown) {
+              if (jqxhr.status == 403) {
+                location.reload();
+              } else {
+                console.log(`getReadings failed: ${jqxhr.status} (${jqxhr.statusText}), ${textStatus}, ${errorThrown}`);
+              }
+            })
+            .always(function() {
+              timer = setTimeout(getReadings, 30 * 1000);
+            });
         };
 
-        $.each(['monitor_id', 'endpoint_id', 'hours'], function(key, value) {
+        $.each(['monitor_id', 'hours'], function(key, value) {
           if (result = localStorage.getItem(value)) {
             if ($(`select.id-${value} option[value="${result}"]`).length) {
               $(`select.id-${value}`).val(result);
@@ -81,8 +111,20 @@ foreach ($periods as $hours => $period) {
           }
         });
 
-        $('select.id-monitor_id, select.id-endpoint_id, select.id-hours').change(function() {
+        if ($('select.id-monitor_id').val() != 0 && $('select.id-hours').val() != 0) {
+          getReadings();
+        }
+
+        $('select.id-monitor_id, select.id-hours').change(function() {
+          clearTimeout(timer);
           localStorage.setItem($(this).data('storage'), $(this).val());
+          if ($('select.id-monitor_id').val() != 0 && $('select.id-hours').val() != 0) {
+            getReadings();
+          } else {
+            delete config.data.datasets[0].data;
+            chart.update();
+          }
+
         });
 
         $('button.id-nav').click(function() {
