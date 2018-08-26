@@ -26,7 +26,7 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
 }
 ?>
       </select>
-      <select class='btn btn-sm btn-outline-success mr-auto id-hours' data-storage='hours'>
+      <select class='btn btn-sm btn-outline-success mr-2 id-hours' data-storage='hours'>
         <option value='0'>Period</option>
 <?php
 $periods = [
@@ -48,6 +48,10 @@ foreach ($periods as $hours => $period) {
 }
 ?>
       </select>
+      <select class='btn btn-sm btn-outline-success mr-auto id-type' data-storage='type'>
+        <option value='0'>Summary</option>
+        <option value='1'>Detailed</option>
+      </select>
     </nav>
     <div class='container'>
     </div>
@@ -58,19 +62,12 @@ foreach ($periods as $hours => $period) {
     <script src='//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js' integrity='sha384-0saKbDOWtYAw5aP4czPUm6ByY5JojfQ9Co6wDgkuM7Zn+anp+4Rj92oGK8cbV91S' crossorigin='anonymous'></script>
     <script>
       $(document).ready(function() {
+        var firstRun = true;
         var timer;
         var config = {
           type: 'line',
-          data: {
-            datasets: [{
-              backgroundColor: 'rgba(255, 0, 0, 0.3)',
-              borderColor: 'rgb(255, 0, 0)',
-              borderWidth: 1,
-              pointRadius: 2
-            }]
-          },
           options: {
-            legend: {display: false},
+            legend: {display: true, position: 'bottom'},
             scales: {
               xAxes: [{display: true, type: 'time'}],
               yAxes: [{
@@ -84,10 +81,48 @@ foreach ($periods as $hours => $period) {
         var chart = new Chart($('#chart'), config);
 
         function getReadings() {
-          $.get('src/action.php', {"func": "getReadings", "monitor_id": $('select.id-monitor_id').val(), "hours": $('select.id-hours').val()})
+          $.get('src/action.php', {"func": "getReadings", "monitor_id": $('select.id-monitor_id').val(), "hours": $('select.id-hours').val(), "type": $('select.id-type').val()})
             .done(function(data) {
               if (data.success) {
-                config.data.datasets[0].data = data.data;
+                if (data.data.edges) {
+                  $.each(data.data.edges, function(key, value) {
+                    if (firstRun) {
+                      var r = Math.ceil(Math.random() * 255);
+                      var g = Math.ceil(Math.random() * 255);
+                      var b = Math.ceil(Math.random() * 255);
+                      config.options.legend.display = true;
+                      config.data.datasets[key - 1] = {
+                        label: value,
+                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
+                        borderColor: `rgb(${r}, ${g}, ${b})`,
+                        borderWidth: 1,
+                        pointRadius: 2,
+                        fill: false,
+                        data: data.data.edgeData[key]
+                      };
+                    } else {
+                      config.data.datasets[key - 1].data = data.data.edgeData[key];
+                    };
+                  });
+                } else {
+                  if (firstRun) {
+                    var r = Math.ceil(Math.random() * 255);
+                    var g = Math.ceil(Math.random() * 255);
+                    var b = Math.ceil(Math.random() * 255);
+                    config.options.legend.display = false;
+                    config.data.datasets[0] = {
+                      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
+                      borderColor: `rgb(${r}, ${g}, ${b})`,
+                      borderWidth: 1,
+                      pointRadius: 2,
+                      fill: true,
+                      data: data.data
+                    };
+                  } else {
+                    config.data.datasets[0].data = data.data;
+                  };
+                };
+                firstRun = false;
                 chart.update();
               }
             })
@@ -103,7 +138,7 @@ foreach ($periods as $hours => $period) {
             });
         };
 
-        $.each(['monitor_id', 'hours'], function(key, value) {
+        $.each(['monitor_id', 'hours', 'type'], function(key, value) {
           if (result = localStorage.getItem(value)) {
             if ($(`select.id-${value} option[value="${result}"]`).length) {
               $(`select.id-${value}`).val(result);
@@ -115,13 +150,14 @@ foreach ($periods as $hours => $period) {
           getReadings();
         }
 
-        $('select.id-monitor_id, select.id-hours').change(function() {
+        $('select.id-monitor_id, select.id-hours, select.id-type').change(function() {
           clearTimeout(timer);
           localStorage.setItem($(this).data('storage'), $(this).val());
+          config.data.datasets = [];
+          firstRun = true;
           if ($('select.id-monitor_id').val() != 0 && $('select.id-hours').val() != 0) {
             getReadings();
           } else {
-            delete config.data.datasets[0].data;
             chart.update();
           }
 

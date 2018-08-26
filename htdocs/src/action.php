@@ -167,8 +167,8 @@ switch ($_REQUEST['func']) {
     break;
   case 'getReadings':
     if ($continuum->isValidSession()) {
-      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['hours'])) {
-        if ($output['data'] = $continuum->getReadings($_REQUEST['monitor_id'], $_REQUEST['hours'])) {
+      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['hours']) && isset($_REQUEST['type'])) {
+        if ($output['data'] = $continuum->getReadings($_REQUEST['monitor_id'], $_REQUEST['hours'], $_REQUEST['type'])) {
           $output['success'] = true;
           $putEvent = false;
         } else {

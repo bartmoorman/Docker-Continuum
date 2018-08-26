@@ -594,21 +594,42 @@ EOQ;
     return false;
   }
 
-  public function getReadings($monitor_id, $hours) {
+  public function getReadings($monitor_id, $hours, $type) {
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $hours = $this->dbConn->escapeString($hours);
-    $query = <<<EOQ
+    switch ($type) {
+      case 0:
+        $query = <<<EOQ
 SELECT STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
 FROM `readings`
 WHERE `monitor_id` = '{$monitor_id}'
 AND `date` > STRFTIME('%s', 'now', '-{$hours} hours')
+AND `total_seconds`
 GROUP BY DATETIME((`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch')
 ORDER BY `date`;
 EOQ;
+        break;
+      case 1:
+        $query = <<<EOQ
+SELECT `edge_id`, `name`, STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
+FROM `readings`
+LEFT JOIN `edges` USING (`edge_id`)
+WHERE `monitor_id` = '{$monitor_id}'
+AND `date` > STRFTIME('%s', 'now', '-{$hours} hours')
+GROUP BY `edge_id`, DATETIME((`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch')
+ORDER BY `date`;
+EOQ;
+        break;
+    }
     if ($readings = $this->dbConn->query($query)) {
       $output = [];
       while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
-        $output[] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
+        if (array_key_exists('edge_id', $reading)) {
+          $output['edges'][$reading['edge_id']] = $reading['name'];
+          $output['edgeData'][$reading['edge_id']][] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
+        } else {
+          $output[] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
+        }
       }
       return $output;
     }
