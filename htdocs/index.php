@@ -19,7 +19,7 @@ include_once('header.php');
     <canvas id='chart'></canvas>
     <nav class='navbar text-center'>
       <select class='btn btn-sm btn-outline-success ml-auto mr-2 id-monitor_id' data-storage='monitor_id'>
-        <option value='0'>Monitor</option>
+        <option value='0'>-- Monitor --</option>
 <?php
 foreach ($continuum->getObjects('monitors') as $monitor) {
   echo "        <option value='{$monitor['monitor_id']}'>{$monitor['name']}</option>" . PHP_EOL;
@@ -27,7 +27,7 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
 ?>
       </select>
       <select class='btn btn-sm btn-outline-success mr-2 id-hours' data-storage='hours'>
-        <option value='0'>Period</option>
+        <option value='0'>-- Period --</option>
 <?php
 $periods = [
   1 => '1 hour',
