@@ -72,10 +72,10 @@ switch ($_REQUEST['func']) {
   case 'createApp':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['name'])) {
-        $key = isset($_REQUEST['key']) ? $_REQUEST['key'] : null;
+        $token = isset($_REQUEST['token']) ? $_REQUEST['token'] : null;
         $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
         $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->createApp($_REQUEST['name'], $key, $begin, $end);
+        $output['success'] = $continuum->createApp($_REQUEST['name'], $token, $begin, $end);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -145,10 +145,10 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateApp':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['app_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['key'])) {
+      if (!empty($_REQUEST['app_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['token'])) {
         $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
         $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->updateApp($_REQUEST['app_id'], $_REQUEST['name'], $_REQUEST['key'], $begin, $end);
+        $output['success'] = $continuum->updateApp($_REQUEST['app_id'], $_REQUEST['name'], $_REQUEST['token'], $begin, $end);
         $log['app_id'] = $_REQUEST['app_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
@@ -202,7 +202,7 @@ switch ($_REQUEST['func']) {
     }
     break;
   case 'getReadings':
-    if ($continuum->isValidSession() || (array_key_exists('key', $_REQUEST) && $continuum->isValidObject('key', $_REQUEST['key']))) {
+    if ($continuum->isValidSession() || (array_key_exists('token', $_REQUEST) && $continuum->isValidObject('token', $_REQUEST['token']))) {
       if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['hours']) && isset($_REQUEST['type'])) {
         if ($output['data'] = $continuum->getReadings($_REQUEST['monitor_id'], $_REQUEST['hours'], $_REQUEST['type'])) {
           $output['success'] = true;
