@@ -110,6 +110,22 @@ CREATE TABLE IF NOT EXISTS `readings` (
   `status_code` INTEGER,
   `reason` TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `apps` (
+  `app_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` TEXT NOT NULL,
+  `key` TEXT NOT NULL UNIQUE,
+  `begin` INTEGER,
+  `end` INTEGER,
+  `disabled` INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS `calls` (
+  `call_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `date` INTEGER DEFAULT (STRFTIME('%s', 'now')),
+  `app_id` INTEGER NOT NULL,
+  `action` TEXT,
+  `message` BLOB,
+  `remote_addr` INTEGER
+);
 EOQ;
     if ($this->dbConn->exec($query)) {
       return true;
@@ -186,6 +202,10 @@ EOQ;
         break;
       case 'monitor_id':
         $table = 'monitors';
+        break;
+      case 'key':
+      case 'app_id':
+        $table = 'apps';
         break;
     }
     $query = <<<EOQ
@@ -294,6 +314,29 @@ EOQ;
 INSERT
 INTO `monitors` (`name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`)
 VALUES ('{$name}', '{$url}', '{$edges}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public function createApp($name, $key = null, $begin = null, $end = null) {
+    $key = !$key ? bin2hex(random_bytes(8)) : $this->dbConn->escapeString($key);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `apps`
+WHERE `key` = '{$key}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $begin = $this->dbConn->escapeString($begin);
+      $end = $this->dbConn->escapeString($end);
+      $query = <<<EOQ
+INSERT
+INTO `apps` (`name`, `key`, `begin`, `end`)
+VALUES ('{$name}', '{$key}', STRFTIME('%s','{$begin}',) STRFTIME('%s','{$end}'));
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -413,6 +456,35 @@ EOQ;
     return false;
   }
 
+  public function updateApp($app_id, $name, $key, $begin, $end) {
+    $app_id = $this->dbConn->escapeString($app_id);
+    $key = $this->dbConn->escapeString($key);
+    $query = <<<EOQ
+SELECT COUNT(*)
+FROM `apps`
+WHERE `app_id` != '{$app_id}'
+AND `key` = '{$key}';
+EOQ;
+    if (!$this->dbConn->querySingle($query)) {
+      $name = $this->dbConn->escapeString($name);
+      $begin = $this->dbConn->escapeString($begin);
+      $end = $this->dbConn->escapeString($end);
+      $query = <<<EOQ
+UPDATE `apps`
+SET
+  `name` = '{$name}',
+  `key` = '{$key}',
+  `begin` = STRFTIME('%s', '{$begin}'),
+  `end` = STRFTIME('%s', '{$end}')
+WHERE `app_id` = '{$app_id}';
+EOQ;
+      if ($this->dbConn->exec($query)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public function modifyObject($action, $type, $value, $extra_type = null, $extra_value = null) {
     $type = $this->dbConn->escapeString($type);
     $value = $this->dbConn->escapeString($value);
@@ -431,6 +503,11 @@ EOQ;
       case 'monitor_id':
         $table = 'monitors';
         $extra_table = 'readings';
+        break;
+      case 'key':
+      case 'app_id':
+        $table = 'apps';
+        $extra_table = 'calls';
         break;
     }
     switch ($action) {
@@ -488,6 +565,13 @@ FROM `monitors`
 ORDER BY `name`;
 EOQ;
         break;
+      case 'apps':
+        $query = <<<EOQ
+SELECT `app_id`, `name`, `key`, `begin`, `end`, `disabled`
+FROM `apps`
+ORDER BY `name`;
+EOQ;
+        break;
     }
     if ($objects = $this->dbConn->query($query)) {
       $output = [];
@@ -523,6 +607,14 @@ FROM `monitors`
 WHERE `monitor_id` = '{$value}';
 EOQ;
         break;
+      case 'app':
+        $query = <<<EOQ
+SELECT `app_id`, `name`, `key`, STRFTIME('%Y-%m-%dT%H:%M', `begin`, 'unixepoch') AS `begin`, STRFTIME('%Y-%m-%dT%H:%M', `end`, 'unixepoch') AS `end`, `disabled`
+FROM `apps`
+WHERE `app_id` = '{$value}';
+EOQ;
+        break;
+
     }
     if ($object = $this->dbConn->querySingle($query, true)) {
       return $object;

@@ -69,6 +69,24 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
+  case 'createApp':
+    if ($continuum->isValidSession() && $continuum->isAdmin()) {
+      if (!empty($_REQUEST['name'])) {
+        $key = isset($_REQUEST['key']) ? $_REQUEST['key'] : null;
+        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
+        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
+        $output['success'] = $continuum->createApp($_REQUEST['name'], $key, $begin, $end);
+      } else {
+        header('HTTP/1.1 400 Bad Request');
+        $output['success'] = false;
+        $output['message'] = 'No name supplied';
+      }
+    } else {
+      header('HTTP/1.1 403 Forbidden');
+      $output['success'] = false;
+      $output['message'] = 'Unauthorized';
+    }
+    break;
   case 'updateUser':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['user_id']) && !empty($_REQUEST['username']) && !empty($_REQUEST['first_name']) && !empty($_REQUEST['role'])) {
@@ -125,6 +143,24 @@ switch ($_REQUEST['func']) {
       $output['message'] = 'Unauthorized';
     }
     break;
+  case 'updateApp':
+    if ($continuum->isValidSession() && $continuum->isAdmin()) {
+      if (!empty($_REQUEST['app_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['key'])) {
+        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
+        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
+        $output['success'] = $continuum->updateApp($_REQUEST['app_id'], $_REQUEST['name'], $_REQUEST['key'], $begin, $end);
+        $log['app_id'] = $_REQUEST['app_id'];
+      } else {
+        header('HTTP/1.1 400 Bad Request');
+        $output['success'] = false;
+        $output['message'] = 'Missing arguments';
+      }
+    } else {
+      header('HTTP/1.1 403 Forbidden');
+      $output['success'] = false;
+      $output['message'] = 'Unauthorized';
+    }
+    break;
   case 'modifyObject':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['action']) && !empty($_REQUEST['type']) && !empty($_REQUEST['value'])) {
@@ -166,7 +202,7 @@ switch ($_REQUEST['func']) {
     }
     break;
   case 'getReadings':
-    if ($continuum->isValidSession()) {
+    if ($continuum->isValidSession() || (array_key_exists('key', $_REQUEST) && $continuum->isValidObject('key', $_REQUEST['key']))) {
       if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['hours']) && isset($_REQUEST['type'])) {
         if ($output['data'] = $continuum->getReadings($_REQUEST['monitor_id'], $_REQUEST['hours'], $_REQUEST['type'])) {
           $output['success'] = true;
