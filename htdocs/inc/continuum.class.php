@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS `readings` (
   `status_code` INTEGER,
   `reason` TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS `idx_readings_monitor_id_date` ON `readings` (`monitor_id`, `date`);
 CREATE TABLE IF NOT EXISTS `apps` (
   `app_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
