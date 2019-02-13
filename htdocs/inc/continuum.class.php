@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `pushover_expire` INTEGER DEFAULT 3600,
   `pushover_sound` TEXT,
   `role` TEXT NOT NULL,
+  `begin` INTEGER,
+  `end` INTEGER,
   `disabled` INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS `events` (
@@ -93,6 +95,8 @@ CREATE TABLE IF NOT EXISTS `edges` (
   `name` TEXT NOT NULL,
   `url` TEXT NOT NULL,
   `api_key` TEXT NOT NULL,
+  `begin` INTEGER,
+  `end` INTEGER,
   `disabled` INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS `monitors` (
@@ -104,6 +108,8 @@ CREATE TABLE IF NOT EXISTS `monitors` (
   `timeout` NUMERIC NOT NULL DEFAULT 1.0,
   `allow_redirects` INTEGER NOT NULL DEFAULT 1,
   `verify` INTEGER NOT NULL DEFAULT 1,
+  `begin` INTEGER,
+  `end` INTEGER,
   `disabled` INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS `readings` (
@@ -218,6 +224,8 @@ EOQ;
 SELECT COUNT(*)
 FROM `{$table}`
 WHERE `{$type}` = '{$value}'
+AND (`begin` IS NULL OR `begin` < STRFTIME('%s', 'now', 'localtime'))
+AND (`end` IS NULL OR `end` > STRFTIME('%s', 'now', 'localtime'))
 AND NOT `disabled`;
 EOQ;
     if ($this->dbConn->querySingle($query)) {
@@ -270,7 +278,7 @@ EOQ;
     return false;
   }
 
-  public function createUser($username, $password, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role) {
+  public function createUser($username, $password, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role, $begin = null, $end = null) {
     $username = $this->dbConn->escapeString($username);
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -288,10 +296,12 @@ EOQ;
       $pushover_expire = $this->dbConn->escapeString($pushover_expire);
       $pushover_sound = $this->dbConn->escapeString($pushover_sound);
       $role = $this->dbConn->escapeString($role);
+      $begin = $this->dbConn->escapeString($begin);
+      $end = $this->dbConn->escapeString($end);
       $query = <<<EOQ
 INSERT
-INTO `users` (`username`, `password`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`)
-VALUES ('{$username}', '{$password}', '{$first_name}', '{$last_name}', '{$pushover_user}', '{$pushover_token}', '{$pushover_priority}', '{$pushover_retry}', '{$pushover_expire}', '{$pushover_sound}', '{$role}');
+INTO `users` (`username`, `password`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, `begin`, `end`)
+VALUES ('{$username}', '{$password}', '{$first_name}', '{$last_name}', '{$pushover_user}', '{$pushover_token}', '{$pushover_priority}', '{$pushover_retry}', '{$pushover_expire}', '{$pushover_sound}', '{$role}', STRFTIME('%s', '{$begin}'), STRFTIME('%s', '{$end}'));
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -371,7 +381,7 @@ EOQ;
     return false;
   }
 
-  public function updateUser($user_id, $username, $password = null, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role) {
+  public function updateUser($user_id, $username, $password = null, $first_name, $last_name = null, $pushover_user = null, $pushover_token = null, $pushover_priority = null, $pushover_retry = null, $pushover_expire = null, $pushover_sound = null, $role, $begin = null, $end = null) {
     $user_id = $this->dbConn->escapeString($user_id);
     $username = $this->dbConn->escapeString($username);
     $query = <<<EOQ
@@ -397,6 +407,8 @@ EOQ;
       $pushover_expire = $this->dbConn->escapeString($pushover_expire);
       $pushover_sound = $this->dbConn->escapeString($pushover_sound);
       $role = $this->dbConn->escapeString($role);
+      $begin = $this->dbConn->escapeString($begin);
+      $end = $this->dbConn->escapeString($end);
       $query = <<<EOQ
 UPDATE `users`
 SET
@@ -410,7 +422,9 @@ SET
   `pushover_retry` = '{$pushover_retry}',
   `pushover_expire` = '{$pushover_expire}',
   `pushover_sound` = '{$pushover_sound}',
-  `role` = '{$role}'
+  `role` = '{$role}',
+  `begin` = STRFTIME('%s', '{$begin}'),
+  `end` = STRFTIME('%s', '{$end}')
 WHERE `user_id` = '{$user_id}';
 EOQ;
       if ($this->dbConn->exec($query)) {
@@ -572,7 +586,7 @@ EOQ;
     switch ($type) {
       case 'users':
         $query = <<<EOQ
-SELECT `user_id`, `username`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, `disabled`
+SELECT `user_id`, `username`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, `begin`, `end`, `disabled`
 FROM `users`
 ORDER BY `last_name`, `first_name`;
 EOQ;
@@ -614,7 +628,7 @@ EOQ;
     switch ($type) {
       case 'user':
         $query = <<<EOQ
-SELECT `user_id`, `username`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, `disabled`
+SELECT `user_id`, `username`, `first_name`, `last_name`, `pushover_user`, `pushover_token`, `pushover_priority`, `pushover_retry`, `pushover_expire`, `pushover_sound`, `role`, STRFTIME('%Y-%m-%dT%H:%M', `begin`, 'unixepoch') AS `begin`, STRFTIME('%Y-%m-%dT%H:%M', `end`, 'unixepoch') AS `end`, `disabled`
 FROM `users`
 WHERE `user_id` = '{$value}';
 EOQ;
