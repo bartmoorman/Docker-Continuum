@@ -10,8 +10,7 @@ docker run \
 --name continuum \
 --link memcached \
 --publish 6082:6082 \
---env "HTTPD_SERVERNAME=**sub.do.main**" \
---env "PUSHOVER_APP_TOKEN=azGDORePK8gMaC0QOYAMyEEuzJnyUi" \
+--env "PUSHOVER_APP_TOKEN=<token>" \
 --volume continuum-config:/config \
 bmoorman/continuum:latest
 ```
@@ -32,11 +31,18 @@ services:
     ports:
       - "6082:6082"
     environment:
-      - HTTPD_SERVERNAME=**sub.do.main**
-      - PUSHOVER_APP_TOKEN=azGDORePK8gMaC0QOYAMyEEuzJnyUi
+      - PUSHOVER_APP_TOKEN=<token>
     volumes:
       - continuum-config:/config
 
 volumes:
   continuum-config:
 ```
+
+### Environment Variables
+* **TZ** Sets the timezone. Default `America/Denver`.
+* **HTTPD_SERVERNAME** Sets the vhost servername. Default `localhost`.
+* **HTTPD_PORT** Sets the vhost port. Default `6082`.
+* **HTTPD_SSL** Set to anything other than `SSL` (e.g. `NO_SSL`) to disable SSL. Default `SSL`.
+* **HTTPD_REDIRECT** Set to anything other than `REDIRECT` (e.g. `NO_REDIRECT`) to disable SSL redirect. Default `REDIRECT`.
+* **PUSHOVER_APP_TOKEN** Used to retrieve sounds from the Pushover API. Default `<empty>`
