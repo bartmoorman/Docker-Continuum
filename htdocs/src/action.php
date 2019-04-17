@@ -44,7 +44,8 @@ switch ($_REQUEST['func']) {
   case 'createEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $output['success'] = $continuum->createEdge($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+        $color = !empty($_REQUEST['color']) ? $_REQUEST['color'] : null;
+        $output['success'] = $continuum->createEdge($_REQUEST['name'], $color, $_REQUEST['url'], $_REQUEST['api_key']);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -118,7 +119,8 @@ switch ($_REQUEST['func']) {
   case 'updateEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
       if (!empty($_REQUEST['edge_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $output['success'] = $continuum->updateEdge($_REQUEST['edge_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['api_key']);
+        $color = !empty($_REQUEST['color']) ? $_REQUEST['color'] : null;
+        $output['success'] = $continuum->updateEdge($_REQUEST['edge_id'], $_REQUEST['name'], $color, $_REQUEST['url'], $_REQUEST['api_key']);
         $log['edge_id'] = $_REQUEST['edge_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');

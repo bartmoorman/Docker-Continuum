@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS `events` (
 CREATE TABLE IF NOT EXISTS `edges` (
   `edge_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
+  `color` TEXT,
   `url` TEXT NOT NULL,
   `api_key` TEXT NOT NULL,
   `begin` INTEGER,
@@ -312,7 +313,7 @@ EOQ;
     return false;
   }
 
-  public function createEdge($name, $url, $api_key) {
+  public function createEdge($name, $color = null, $url, $api_key) {
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -321,11 +322,12 @@ WHERE `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $color = $this->dbConn->escapeString($color);
       $api_key = $this->dbConn->escapeString($api_key);
       $query = <<<EOQ
 INSERT
-INTO `edges` (`name`, `url`, `api_key`)
-VALUES ('{$name}', '{$url}', '{$api_key}');
+INTO `edges` (`name`, `color`, `url`, `api_key`)
+VALUES ('{$name}', '{$color}', '{$url}', '{$api_key}');
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -436,7 +438,7 @@ EOQ;
     return false;
   }
 
-  public function updateEdge($edge_id, $name, $url, $api_key) {
+  public function updateEdge($edge_id, $name, $color = null, $url, $api_key) {
     $edge_id = $this->dbConn->escapeString($edge_id);
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
@@ -447,11 +449,13 @@ AND `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $color = $this->dbConn->escapeString($color);
       $api_key = $this->dbConn->escapeString($api_key);
       $query = <<<EOQ
 UPDATE `edges`
 SET
   `name` = '{$name}',
+  `color` = '{$color}',
   `url` = '{$url}',
   `api_key` = '{$api_key}'
 WHERE `edge_id` = '{$edge_id}';
@@ -595,7 +599,7 @@ EOQ;
         break;
       case 'edges':
         $query = <<<EOQ
-SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+SELECT `edge_id`, `name`, `color`, `url`, `api_key`, `disabled`
 FROM `edges`
 ORDER BY `name`;
 EOQ;
@@ -637,7 +641,7 @@ EOQ;
         break;
       case 'edge':
         $query = <<<EOQ
-SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+SELECT `edge_id`, `name`, `color`, `url`, `api_key`, `disabled`
 FROM `edges`
 WHERE `edge_id` = '{$value}';
 EOQ;
@@ -761,7 +765,7 @@ EOQ;
         break;
       case 1:
         $query = <<<EOQ
-SELECT `edge_id`, `name`, STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
+SELECT `edge_id`, `name`, `color`, STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
 FROM `readings`
 LEFT JOIN `edges` USING (`edge_id`)
 WHERE `monitor_id` = '{$monitor_id}'
@@ -775,7 +779,7 @@ EOQ;
       $output = [];
       while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
         if (array_key_exists('edge_id', $reading)) {
-          $output['edges'][$reading['edge_id']] = $reading['name'];
+          $output['edges'][$reading['edge_id']] = ['name' => $reading['name'], 'color' => $reading['color']];
           $output['edgeData'][$reading['edge_id']][] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
         } else {
           $output[] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];

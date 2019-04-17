@@ -8,9 +8,9 @@ $continuum = new Continuum(true, true, false, false);
     <title>Continuum - Index</title>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-    <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css' integrity='sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB' crossorigin='anonymous'>
-    <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootswatch/4.1.1/darkly/bootstrap.min.css' integrity='sha384-ae362vOLHy2F1EfJtpMbNW0i9pNM1TP2l5O4VGYYiLJKsaejqVWibbP6BSf0UU5i' crossorigin='anonymous'>
-    <link rel='stylesheet' href='//use.fontawesome.com/releases/v5.1.0/css/all.css' integrity='sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//stackpath.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css' integrity='sha384-w+8Gqjk9Cuo6XH9HKHG5t5I1VR4YBNdPt/29vwgfZR485eoEJZ8rJRbm3TR32P6k' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous'>
   </head>
   <body>
 <?php
@@ -56,10 +56,10 @@ foreach ($periods as $hours => $period) {
     <div class='container'>
     </div>
     <script src='//code.jquery.com/jquery-3.3.1.min.js' integrity='sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT' crossorigin='anonymous'></script>
-    <script src='//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>
-    <script src='//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js' integrity='sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T' crossorigin='anonymous'></script>
-    <script src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js' integrity='sha384-F13mJAeqdsVJS5kJv7MZ4PzYmJ+yXXZkt/gEnamJGTXZFzYgAcVtNg5wBDrRgLg9' crossorigin='anonymous'></script>
-    <script src='//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js' integrity='sha384-0saKbDOWtYAw5aP4czPUm6ByY5JojfQ9Co6wDgkuM7Zn+anp+4Rj92oGK8cbV91S' crossorigin='anonymous'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
+    <script src='//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js' integrity='sha384-fYxN7HsDOBRo1wT/NSZ0LkoNlcXvpDpFy6WzB42LxuKAX7sBwgo7vuins+E1HCaw' crossorigin='anonymous'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js' integrity='sha384-QzN1ywg2QLsf72ZkgRHgjkB/cfI4Dqjg6RJYQUqH6Wm8qp/MvmEYn+2NBsLnhLkr' crossorigin='anonymous'></script>
     <script>
       $(document).ready(function() {
         var firstRun = true;
@@ -87,14 +87,11 @@ foreach ($periods as $hours => $period) {
                 if (data.data.edges) {
                   $.each(data.data.edges, function(key, value) {
                     if (firstRun) {
-                      var r = Math.ceil(Math.random() * 255);
-                      var g = Math.ceil(Math.random() * 255);
-                      var b = Math.ceil(Math.random() * 255);
                       config.options.legend.display = true;
                       config.data.datasets[key - 1] = {
-                        label: value,
-                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
-                        borderColor: `rgb(${r}, ${g}, ${b})`,
+                        label: value.name,
+                        backgroundColor: value.color + '4d',
+                        borderColor: value.color,
                         borderWidth: 1,
                         pointRadius: 2,
                         fill: false,
@@ -102,7 +99,7 @@ foreach ($periods as $hours => $period) {
                       };
                     } else {
                       config.data.datasets[key - 1].data = data.data.edgeData[key];
-                    };
+                    }
                   });
                 } else {
                   if (firstRun) {
@@ -120,8 +117,8 @@ foreach ($periods as $hours => $period) {
                     };
                   } else {
                     config.data.datasets[0].data = data.data;
-                  };
-                };
+                  }
+                }
                 firstRun = false;
                 chart.update();
               }

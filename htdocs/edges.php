@@ -8,9 +8,9 @@ $continuum = new Continuum(true, true, true, false);
     <title>Continuum - Edges</title>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-    <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css' integrity='sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB' crossorigin='anonymous'>
-    <link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootswatch/4.1.1/darkly/bootstrap.min.css' integrity='sha384-ae362vOLHy2F1EfJtpMbNW0i9pNM1TP2l5O4VGYYiLJKsaejqVWibbP6BSf0UU5i' crossorigin='anonymous'>
-    <link rel='stylesheet' href='//use.fontawesome.com/releases/v5.1.0/css/all.css' integrity='sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//stackpath.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css' integrity='sha384-w+8Gqjk9Cuo6XH9HKHG5t5I1VR4YBNdPt/29vwgfZR485eoEJZ8rJRbm3TR32P6k' crossorigin='anonymous'>
+    <link rel='stylesheet' href='//use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous'>
   </head>
   <body>
 <?php
@@ -23,6 +23,7 @@ include_once('header.php');
             <th><button type='button' class='btn btn-sm btn-outline-success id-add'>Add</button></th>
             <th>Edge ID</th>
             <th>Edge Name</th>
+            <th>Color</th>
             <th>URL</th>
           </tr>
         </thead>
@@ -34,6 +35,7 @@ foreach ($continuum->getObjects('edges') as $edge) {
   echo "            <td><button type='button' class='btn btn-sm btn-outline-info id-details' data-edge_id='{$edge['edge_id']}'>Details</button></td>" . PHP_EOL;
   echo "            <td>{$edge['edge_id']}</td>" . PHP_EOL;
   echo "            <td>{$edge['name']}</td>" . PHP_EOL;
+  echo "            <td><span class='badge badge-pill text-monospace' style='background-color:{$edge['color']};'>{$edge['color']}</span></td>" . PHP_EOL;
   echo "            <td>{$edge['url']}</td>" . PHP_EOL;
   echo "          </tr>" . PHP_EOL;
 }
@@ -53,6 +55,10 @@ foreach ($continuum->getObjects('edges') as $edge) {
                 <div class='form-group col'>
                   <label>Edge Name <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
                   <input class='form-control' id='name' type='text' name='name' required>
+                </div>
+                <div class='form-group col'>
+                  <label>Color</label>
+                  <input class='form-control' id='color' type='color' name='color'>
                 </div>
               </div>
               <div class='form-row'>
@@ -79,8 +85,8 @@ foreach ($continuum->getObjects('edges') as $edge) {
       </div>
     </div>
     <script src='//code.jquery.com/jquery-3.3.1.min.js' integrity='sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT' crossorigin='anonymous'></script>
-    <script src='//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>
-    <script src='//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js' integrity='sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T' crossorigin='anonymous'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
+    <script src='//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
     <script>
       $(document).ready(function() {
         $('[data-toggle="tooltip"]').tooltip();
@@ -88,6 +94,7 @@ foreach ($continuum->getObjects('edges') as $edge) {
         $('button.id-add').click(function() {
           $('h5.modal-title').text('Add Edge');
           $('form').removeData('edge_id').data('func', 'createEdge').trigger('reset');
+          $('#color').val('#' + ('000000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6));
           $('button.id-modify').addClass('d-none').removeData('edge_id');
           $('button.id-submit').removeClass('btn-info').addClass('btn-success').text('Add');
           $('div.id-modal').modal('toggle');
@@ -104,6 +111,7 @@ foreach ($continuum->getObjects('edges') as $edge) {
                 edge = data.data;
                 $('form').data('edge_id', edge.edge_id);
                 $('#name').val(edge.name);
+                $('#color').val(edge.color);
                 $('#url').val(edge.url);
                 $('#api_key').val(edge.api_key);
                 $('button.id-modify.id-volatile').data('action', edge.disabled ? 'enable' : 'disable').text(edge.disabled ? 'Enable' : 'Disable');
@@ -132,7 +140,7 @@ foreach ($continuum->getObjects('edges') as $edge) {
 
         $('form').submit(function(e) {
           e.preventDefault();
-          $.post('src/action.php', {"func": $(this).data('func'), "edge_id": $(this).data('edge_id'), "name": $('#name').val(), "url": $('#url').val(), "api_key": $('#api_key').val()})
+          $.post('src/action.php', {"func": $(this).data('func'), "edge_id": $(this).data('edge_id'), "name": $('#name').val(), "color": $('#color').val(), "url": $('#url').val(), "api_key": $('#api_key').val()})
             .done(function(data) {
               if (data.success) {
                 location.reload();
