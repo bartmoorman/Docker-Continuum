@@ -804,10 +804,26 @@ EOQ;
     return false;
   }
 
+  public function getActiveMonitors() {
+    $query = <<<EOQ
+SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`
+FROM `monitors`
+WHERE NOT `disabled`;
+EOQ;
+    if ($monitors = $this->dbConn->query($query)) {
+      $output = [];
+      while ($monitor = $monitors->fetchArray(SQLITE3_ASSOC)) {
+        $output[] = $monitor;
+      }
+      return $output;
+    }
+    return false;
+  }
+
   public function getRandomEdges($limit = 2) {
     $limit = $this->dbConn->escapeString($limit);
     $query = <<<EOQ
-SELECT `edge_id`, `name`, `url`, `api_key`, `disabled`
+SELECT `edge_id`, `name`, `url`, `api_key`
 FROM `edges`
 WHERE NOT `disabled`
 ORDER BY RANDOM()
