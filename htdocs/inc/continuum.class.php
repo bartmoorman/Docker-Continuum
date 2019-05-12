@@ -30,6 +30,7 @@ class Continuum {
       $this->initDb();
     }
 
+    $this->memcachedHost = getenv('MEMCACHED_HOST');
     $this->connectMemcached();
 
     $this->connectQueue();
@@ -49,7 +50,6 @@ class Continuum {
       exit;
     }
 
-    $this->memcachedHost = getenv('MEMCACHED_HOST');
     $this->pushoverAppToken = getenv('PUSHOVER_APP_TOKEN');
   }
 
