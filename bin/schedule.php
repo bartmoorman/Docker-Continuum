@@ -23,18 +23,16 @@ while (true) {
               $continuum->putReading($edge['edge_id'], $monitor['monitor_id'], array_key_exists('total_seconds', $json) ? $json['total_seconds'] : null, array_key_exists('status_code', $json) ? $json['status_code'] : null, $json['reason']);
             }
             exit;
-            break;
           default:
             $pids[] = $pid;
         }
       }
       $continuum->memcachedConn->set(sprintf('lastRun-%u', $monitor['monitor_id']), time(), 60 * $monitor['interval']);
     }
-  $continuum->memcachedConn->set('lastRun', time());
   }
   foreach ($pids as $key => $cpid) {
     if (pcntl_waitpid($cpid, $status, WNOHANG)) unset($pids[$key]);
   }
-  sleep(15);
+  sleep(5);
 }
 ?>
