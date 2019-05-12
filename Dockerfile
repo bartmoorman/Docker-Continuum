@@ -1,7 +1,8 @@
 FROM bmoorman/ubuntu:bionic
 
 ENV HTTPD_SERVERNAME="localhost" \
-    HTTPD_PORT="6082"
+    HTTPD_PORT="6082" \
+    MEMCACHED_HOST="memcached"
 
 ARG DEBIAN_FRONTEND="noninteractive"
 

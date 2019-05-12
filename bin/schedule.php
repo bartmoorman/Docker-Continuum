@@ -6,7 +6,7 @@ $continuum = new Continuum(false, false, false, false);
 $pids = [];
 while (true) {
   foreach ($continuum->getActiveMonitors() as $monitor) {
-    if (!$continuum->memcacheConn->get(sprintf('lastRun-%u', $monitor['monitor_id']))) {
+    if (!$continuum->memcachedConn->get(sprintf('lastRun-%u', $monitor['monitor_id']))) {
       foreach ($continuum->getRandomEdges($monitor['edges']) as $edge) {
         switch ($pid = pcntl_fork()) {
           case -1:
@@ -28,9 +28,9 @@ while (true) {
             $pids[] = $pid;
         }
       }
-      $continuum->memcacheConn->set(sprintf('lastRun-%u', $monitor['monitor_id']), time(), 60 * $monitor['interval']);
+      $continuum->memcachedConn->set(sprintf('lastRun-%u', $monitor['monitor_id']), time(), 60 * $monitor['interval']);
     }
-  $continuum->memcacheConn->set('lastRun', time());
+  $continuum->memcachedConn->set('lastRun', time());
   }
   foreach ($pids as $key => $cpid) {
     if (pcntl_waitpid($cpid, $status, WNOHANG)) unset($pids[$key]);
