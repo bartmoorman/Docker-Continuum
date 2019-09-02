@@ -18,7 +18,7 @@ class Continuum {
       'gc_divisor' => 1000,
       'gc_maxlifetime' => 60 * 60 * 24 * 7,
       'cookie_lifetime' => 60 * 60 * 24 * 7,
-      'cookie_secure' => true,
+      'cookie_secure' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'] == 'https' ? true : false,
       'cookie_httponly' => true,
       'use_strict_mode' => true
     ]);
