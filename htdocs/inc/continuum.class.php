@@ -1,5 +1,6 @@
 <?php
 class Continuum {
+  public $appName = 'Continuum';
   private $dbFile = '/config/continuum.db';
   private $dbConn;
   private $memcachedHost;
