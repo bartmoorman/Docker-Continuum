@@ -16,7 +16,7 @@ $continuum = new Continuum(true, false, false, true);
         <div class='modal-content'>
           <form>
             <div class='modal-header py-2'>
-              <h3 class='modal-title w-100 text-center'>Continuum</h3>
+              <h3 class='modal-title w-100 text-center'><?php echo $continuum->appName ?></h3>
             </div>
             <div class='modal-body'>
               <div class='form-row'>
