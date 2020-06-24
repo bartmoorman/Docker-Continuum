@@ -86,7 +86,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('edges'); $i++) {
                 <div class='form-group col'>
                   <label>Timeout <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
                   <div class='input-group'>
-                    <input class='form-control id-timeout' id='timeout' type='number' name='timeout' min='1' max='10' step='1' required>
+                    <input class='form-control id-timeout' id='timeout' type='number' name='timeout' min='0.1' max='5.0' step='0.1' required>
                     <div class='input-group-append'>
                       <span class='input-group-text'>sec</span>
                     </div>
