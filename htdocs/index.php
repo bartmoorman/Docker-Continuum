@@ -82,7 +82,7 @@ foreach ($periods as $hours => $period) {
                   $.each(data.data.edges, function(key, value) {
                     if (firstRun) {
                       config.options.legend.display = true;
-                      config.data.datasets[key - 1] = {
+                      config.data.datasets[key] = {
                         label: value.name,
                         backgroundColor: value.color + '4d',
                         borderColor: value.color,
@@ -92,7 +92,7 @@ foreach ($periods as $hours => $period) {
                         data: data.data.edgeData[key]
                       };
                     } else {
-                      config.data.datasets[key - 1].data = data.data.edgeData[key];
+                      config.data.datasets[key].data = data.data.edgeData[key];
                     }
                   });
                 } else {

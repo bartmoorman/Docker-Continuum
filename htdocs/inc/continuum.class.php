@@ -805,11 +805,9 @@ EOQ;
       }
       if ($detailed) {
         ksort($edges);
-        $ek = 1;
-        foreach ($edges as $ev) $output['edges'][$ek++] = $ev;
+        $output['edges'] = array_values($edges);
         ksort($edgeData);
-        $eDk = 1;
-        foreach ($edgeData as $eDv) $output['edgeData'][$eDk++] = $eDv;
+        $output['edgeData'] = array_values($edgeData);
       }
       return $output;
     }
