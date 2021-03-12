@@ -765,6 +765,7 @@ EOQ;
     $hours = $this->dbConn->escapeString($hours);
     switch ($type) {
       case 0:
+        $detailed = false;
         $query = <<<EOQ
 SELECT STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
 FROM `readings`
@@ -776,6 +777,7 @@ ORDER BY `date`;
 EOQ;
         break;
       case 1:
+        $detailed = true;
         $query = <<<EOQ
 SELECT `edge_id`, `name`, `color`, STRFTIME('%Y-%m-%dT%H:%M', (`date` / ({$hours} * 60)) * ({$hours} * 60), 'unixepoch', 'localtime') AS `date`, ROUND(AVG(`total_seconds`) * 1000, 2) AS `total_milliseconds`
 FROM `readings`
@@ -790,12 +792,20 @@ EOQ;
     if ($readings = $this->dbConn->query($query)) {
       $output = [];
       while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
-        if (array_key_exists('edge_id', $reading)) {
-          $output['edges'][$reading['edge_id']] = ['name' => $reading['name'], 'color' => $reading['color']];
-          $output['edgeData'][$reading['edge_id']][] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
+        if ($detailed) {
+          $edges[$reading['edge_id']] = ['name' => $reading['name'], 'color' => $reading['color']];
+          $edgeData[$reading['edge_id']][] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
         } else {
           $output[] = ['x' => $reading['date'], 'y' => $reading['total_milliseconds']];
         }
+      }
+      if ($detailed) {
+        ksort($edges);
+        $ek = 1;
+        foreach ($edges as $ev) $output['edges'][$ek++] = $ev;
+        ksort($edgeData);
+        $eDk = 1;
+        foreach ($edgeData as $eDv) $output['edgeData'][$eDk++] = $eDv;
       }
       return $output;
     }
