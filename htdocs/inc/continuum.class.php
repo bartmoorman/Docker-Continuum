@@ -790,6 +790,10 @@ EOQ;
         break;
     }
     if ($readings = $this->dbConn->query($query)) {
+      if ($detailed) {
+        $edges = [];
+        $edgeData = [];
+      }
       $output = [];
       while ($reading = $readings->fetchArray(SQLITE3_ASSOC)) {
         if ($detailed) {
