@@ -16,7 +16,7 @@ while (true) {
             sleep(rand(5, 60 * $monitor['interval'] - 5));
             $ch = curl_init($edge['url']);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: {$edge['api_key']}"]);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['url' => $monitor['url'], 'timeout' => $monitor['timeout'], 'allow_redirects' => (bool) $monitor['allow_redirects'], 'verify' => (bool) $monitor['verify']]));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['url' => $monitor['url'], 'method' => $monitor['method'], 'timeout' => $monitor['timeout'], 'allow_redirects' => (bool) $monitor['allow_redirects'], 'verify' => (bool) $monitor['verify']]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             if (($result = curl_exec($ch)) !== false && curl_getinfo($ch, CURLINFO_RESPONSE_CODE) == 200) {
               $json = json_decode($result, true);

@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS `monitors` (
   `monitor_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `url` TEXT NOT NULL,
+  `method` TEXT NOT NULL,
   `edges` INTEGER NOT NULL DEFAULT 2,
   `interval` INTEGER NOT NULL DEFAULT 5,
   `timeout` NUMERIC NOT NULL DEFAULT 1.0,
@@ -344,7 +345,7 @@ EOQ;
     return false;
   }
 
-  public function createMonitor($name, $url, $edges, $interval, $timeout, $allow_redirects, $verify) {
+  public function createMonitor($name, $url, $method, $edges, $interval, $timeout, $allow_redirects, $verify) {
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
 SELECT COUNT(*)
@@ -353,6 +354,7 @@ WHERE `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $method = $this->dbConn->escapeString($method);
       $edges = $this->dbConn->escapeString($edges);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
@@ -360,8 +362,8 @@ EOQ;
       $verify = $this->dbConn->escapeString($verify);
       $query = <<<EOQ
 INSERT
-INTO `monitors` (`name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`)
-VALUES ('{$name}', '{$url}', '{$edges}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
+INTO `monitors` (`name`, `url`, `method`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`)
+VALUES ('{$name}', '{$url}', '{$method}', '{$edges}', '{$interval}', '{$timeout}', '{$allow_redirects}', '{$verify}');
 EOQ;
       if ($this->dbConn->exec($query)) {
         return true;
@@ -475,7 +477,7 @@ EOQ;
     return false;
   }
 
-  public function updateMonitor($monitor_id, $name, $url, $edges, $interval, $timeout, $allow_redirects, $verify) {
+  public function updateMonitor($monitor_id, $name, $url, $method, $edges, $interval, $timeout, $allow_redirects, $verify) {
     $monitor_id = $this->dbConn->escapeString($monitor_id);
     $url = $this->dbConn->escapeString($url);
     $query = <<<EOQ
@@ -486,6 +488,7 @@ AND `url` = '{$url}';
 EOQ;
     if (!$this->dbConn->querySingle($query)) {
       $name = $this->dbConn->escapeString($name);
+      $method = $this->dbConn->escapeString($method);
       $edges = $this->dbConn->escapeString($edges);
       $interval = $this->dbConn->escapeString($interval);
       $timeout = $this->dbConn->escapeString($timeout);
@@ -496,6 +499,7 @@ UPDATE `monitors`
 SET
   `name` = '{$name}',
   `url` = '{$url}',
+  `method` = '{$method}',
   `edges` = '{$edges}',
   `interval` = '{$interval}',
   `timeout` = '{$timeout}',
@@ -614,7 +618,7 @@ EOQ;
         break;
       case 'monitors':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `method`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 ORDER BY `name`;
 EOQ;
@@ -656,7 +660,7 @@ EOQ;
         break;
       case 'monitor':
         $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
+SELECT `monitor_id`, `name`, `url`, `method`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`, `disabled`
 FROM `monitors`
 WHERE `monitor_id` = '{$value}';
 EOQ;
@@ -814,7 +818,7 @@ EOQ;
 
   public function getActiveMonitors() {
     $query = <<<EOQ
-SELECT `monitor_id`, `name`, `url`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`
+SELECT `monitor_id`, `name`, `url`, `method`, `edges`, `interval`, `timeout`, `allow_redirects`, `verify`
 FROM `monitors`
 WHERE NOT `disabled`;
 EOQ;

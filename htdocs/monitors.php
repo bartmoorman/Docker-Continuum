@@ -20,6 +20,7 @@ $continuum = new Continuum(true, true, true, false);
             <th>Monitor ID</th>
             <th>Monitor Name</th>
             <th>URL</th>
+            <th>Method</th>
             <th>Edges</th>
             <th>Interval</th>
             <th>Timeout</th>
@@ -34,6 +35,7 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
   echo "            <td>{$monitor['monitor_id']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['name']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['url']}</td>" . PHP_EOL;
+  echo "            <td>{$monitor['method']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['edges']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['interval']}m</td>" . PHP_EOL;
   echo "            <td>{$monitor['timeout']}s</td>" . PHP_EOL;
@@ -56,11 +58,19 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
                   <label>Monitor Name <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
                   <input class='form-control' id='name' type='text' name='name' required>
                 </div>
-              </div>
-              <div class='form-row'>
                 <div class='form-group col'>
                   <label>URL <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
                   <input class='form-control' id='url' type='text' name='url' required>
+                </div>
+              </div>
+              <div class='form-row'>
+                <div class='form-group col'>
+                  <label>Method <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
+                  <select class='form-control' id='method' name='method' required>
+                    <option value='head'>HEAD</option>
+                    <option value='get'>GET</option>
+                    <option value='post'>POST</option>
+                  </select>
                 </div>
                 <div class='form-group col'>
                   <label>Edges <sup class='text-danger' data-toggle='tooltip' title='Required'>*</sup></label>
@@ -148,6 +158,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('edges'); $i++) {
                 $('form').data('monitor_id', monitor.monitor_id);
                 $('#name').val(monitor.name);
                 $('#url').val(monitor.url);
+                $('#method').val(monitor.method);
                 $('#edges').val(monitor.edges);
                 $('#interval').val(monitor.interval);
                 $('#timeout').val(monitor.timeout);
@@ -179,7 +190,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('edges'); $i++) {
 
         $('form').submit(function(e) {
           e.preventDefault();
-          $.post('src/action.php', {"func": $(this).data('func'), "monitor_id": $(this).data('monitor_id'), "name": $('#name').val(), "url": $('#url').val(), "edges": $('#edges').val(), "interval": $('#interval').val(), "timeout": $('#timeout').val(), "allow_redirects": $('#allow_redirects').val(), "verify": $('#verify').val()})
+          $.post('src/action.php', {"func": $(this).data('func'), "monitor_id": $(this).data('monitor_id'), "name": $('#name').val(), "url": $('#url').val(), "method": $('#method').val(), "edges": $('#edges').val(), "interval": $('#interval').val(), "timeout": $('#timeout').val(), "allow_redirects": $('#allow_redirects').val(), "verify": $('#verify').val()})
             .done(function(data) {
               if (data.success) {
                 location.reload();
