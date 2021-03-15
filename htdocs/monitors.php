@@ -176,7 +176,7 @@ for ($i = 1; $i <= $continuum->getObjectCount('edges'); $i++) {
 
         $('button.id-modify').click(function() {
           if (confirm(`Want to ${$(this).data('action').toUpperCase()} monitor ${$(this).data('monitor_id')}?`)) {
-            $.get('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "monitor_id", "value": $(this).data('monitor_id')})
+            $.post('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "monitor_id", "value": $(this).data('monitor_id')})
               .done(function(data) {
                 if (data.success) {
                   location.reload();

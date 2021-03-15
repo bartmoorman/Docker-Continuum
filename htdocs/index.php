@@ -12,7 +12,9 @@ $continuum = new Continuum(true, true, false, false);
   </head>
   <body>
 <?php require_once('header.php'); ?>
-    <canvas id='chart'></canvas>
+    <div class='container-fluid'>
+      <canvas id='chart'></canvas>
+    </div>
     <nav class='navbar text-center'>
       <select class='btn btn-sm btn-outline-success ml-auto mr-2 id-monitor_id' data-storage='monitor_id'>
         <option value='0'>-- Monitor --</option>
@@ -49,8 +51,6 @@ foreach ($periods as $hours => $period) {
         <option value='1'>Detailed</option>
       </select>
     </nav>
-    <div class='container'>
-    </div>
 <?php require_once('include.js'); ?>
     <script src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js' integrity='sha384-fYxN7HsDOBRo1wT/NSZ0LkoNlcXvpDpFy6WzB42LxuKAX7sBwgo7vuins+E1HCaw' crossorigin='anonymous'></script>
     <script src='//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js' integrity='sha384-QzN1ywg2QLsf72ZkgRHgjkB/cfI4Dqjg6RJYQUqH6Wm8qp/MvmEYn+2NBsLnhLkr' crossorigin='anonymous'></script>

@@ -120,7 +120,7 @@ foreach ($continuum->getObjects('edges') as $edge) {
 
         $('button.id-modify').click(function() {
           if (confirm(`Want to ${$(this).data('action').toUpperCase()} edge ${$(this).data('edge_id')}?`)) {
-            $.get('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "edge_id", "value": $(this).data('edge_id')})
+            $.post('src/action.php', {"func": "modifyObject", "action": $(this).data('action'), "type": "edge_id", "value": $(this).data('edge_id')})
               .done(function(data) {
                 if (data.success) {
                   location.reload();
