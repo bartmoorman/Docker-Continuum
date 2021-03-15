@@ -8,9 +8,10 @@ $putEvent = true;
 
 switch ($_REQUEST['func']) {
   case 'authenticateSession':
-    if (!empty($_REQUEST['username']) && !empty($_REQUEST['password'])) {
-      $output['success'] = $continuum->authenticateSession($_REQUEST['username'], $_REQUEST['password']);
-      $log['username'] = $_REQUEST['username'];
+    if (!empty($_POST['username']) && !empty($_POST['password'])) {
+      $output['success'] = $continuum->authenticateSession($_POST['username'], $_POST['password']);
+      $log['username'] = $_POST['username'];
+      usleep(rand(750000, 1000000));
     } else {
       header('HTTP/1.1 400 Bad Request');
       $output['success'] = false;
@@ -19,17 +20,17 @@ switch ($_REQUEST['func']) {
     break;
   case 'createUser':
     if (!$continuum->isConfigured() || ($continuum->isValidSession() && $continuum->isAdmin())) {
-      if (!empty($_REQUEST['username']) && !empty($_REQUEST['password']) && !empty($_REQUEST['first_name']) && !empty($_REQUEST['role'])) {
-        $last_name = !empty($_REQUEST['last_name']) ? $_REQUEST['last_name'] : null;
-        $pushover_user = !empty($_REQUEST['pushover_user']) ? $_REQUEST['pushover_user'] : null;
-        $pushover_token = !empty($_REQUEST['pushover_token']) ? $_REQUEST['pushover_token'] : null;
-        $pushover_priority = isset($_REQUEST['pushover_priority']) ? $_REQUEST['pushover_priority'] : null;
-        $pushover_retry = isset($_REQUEST['pushover_retry']) ? $_REQUEST['pushover_retry'] : null;
-        $pushover_expire = isset($_REQUEST['pushover_expire']) ? $_REQUEST['pushover_expire'] : null;
-        $pushover_sound = !empty($_REQUEST['pushover_sound']) ? $_REQUEST['pushover_sound'] : null;
-        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
-        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->createUser($_REQUEST['username'], $_REQUEST['password'], $_REQUEST['first_name'], $last_name, $pushover_user, $pushover_token, $pushover_priority, $pushover_retry, $pushover_expire, $pushover_sound, $_REQUEST['role'], $begin, $end);
+      if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['first_name']) && !empty($_POST['role'])) {
+        $last_name = !empty($_POST['last_name']) ? $_POST['last_name'] : null;
+        $pushover_user = !empty($_POST['pushover_user']) ? $_POST['pushover_user'] : null;
+        $pushover_token = !empty($_POST['pushover_token']) ? $_POST['pushover_token'] : null;
+        $pushover_priority = isset($_POST['pushover_priority']) ? $_POST['pushover_priority'] : null;
+        $pushover_retry = isset($_POST['pushover_retry']) ? $_POST['pushover_retry'] : null;
+        $pushover_expire = isset($_POST['pushover_expire']) ? $_POST['pushover_expire'] : null;
+        $pushover_sound = !empty($_POST['pushover_sound']) ? $_POST['pushover_sound'] : null;
+        $begin = !empty($_POST['begin']) ? $_POST['begin'] : null;
+        $end = !empty($_POST['end']) ? $_POST['end'] : null;
+        $output['success'] = $continuum->createUser($_POST['username'], $_POST['password'], $_POST['first_name'], $last_name, $pushover_user, $pushover_token, $pushover_priority, $pushover_retry, $pushover_expire, $pushover_sound, $_POST['role'], $begin, $end);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -43,13 +44,13 @@ switch ($_REQUEST['func']) {
     break;
   case 'createEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $color = !empty($_REQUEST['color']) ? $_REQUEST['color'] : null;
-        $output['success'] = $continuum->createEdge($_REQUEST['name'], $color, $_REQUEST['url'], $_REQUEST['api_key']);
+      if (!empty($_POST['name']) && !empty($_POST['url']) && !empty($_POST['api_key'])) {
+        $color = !empty($_POST['color']) ? $_POST['color'] : null;
+        $output['success'] = $continuum->createEdge($_POST['name'], $color, $_POST['url'], $_POST['api_key']);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
-        $output['message'] = 'No name supplied';
+        $output['message'] = 'Missing arguments';
       }
     } else {
       header('HTTP/1.1 403 Forbidden');
@@ -59,12 +60,12 @@ switch ($_REQUEST['func']) {
     break;
   case 'createMonitor':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['method']) && !empty($_REQUEST['edges']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
-        $output['success'] = $continuum->createMonitor($_REQUEST['name'], $_REQUEST['url'], $_REQUEST['method'], $_REQUEST['edges'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
+      if (!empty($_POST['name']) && !empty($_POST['url']) && !empty($_POST['method']) && !empty($_POST['edges']) && !empty($_POST['interval']) && !empty($_POST['timeout']) && isset($_POST['allow_redirects']) && isset($_POST['verify'])) {
+        $output['success'] = $continuum->createMonitor($_POST['name'], $_POST['url'], $_POST['method'], $_POST['edges'], $_POST['interval'], $_POST['timeout'], $_POST['allow_redirects'], $_POST['verify']);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
-        $output['message'] = 'No name supplied';
+        $output['message'] = 'Missing arguments';
       }
     } else {
       header('HTTP/1.1 403 Forbidden');
@@ -74,11 +75,11 @@ switch ($_REQUEST['func']) {
     break;
   case 'createApp':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['name'])) {
-        $token = isset($_REQUEST['token']) ? $_REQUEST['token'] : null;
-        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
-        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->createApp($_REQUEST['name'], $token, $begin, $end);
+      if (!empty($_POST['name'])) {
+        $token = isset($_POST['token']) ? $_POST['token'] : null;
+        $begin = !empty($_POST['begin']) ? $_POST['begin'] : null;
+        $end = !empty($_POST['end']) ? $_POST['end'] : null;
+        $output['success'] = $continuum->createApp($_POST['name'], $token, $begin, $end);
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -92,19 +93,19 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateUser':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['user_id']) && !empty($_REQUEST['username']) && !empty($_REQUEST['first_name']) && !empty($_REQUEST['role'])) {
-        $password = !empty($_REQUEST['password']) ? $_REQUEST['password'] : null;
-        $last_name = !empty($_REQUEST['last_name']) ? $_REQUEST['last_name'] : null;
-        $pushover_user = !empty($_REQUEST['pushover_user']) ? $_REQUEST['pushover_user'] : null;
-        $pushover_token = !empty($_REQUEST['pushover_token']) ? $_REQUEST['pushover_token'] : null;
-        $pushover_priority = isset($_REQUEST['pushover_priority']) ? $_REQUEST['pushover_priority'] : null;
-        $pushover_retry = isset($_REQUEST['pushover_retry']) ? $_REQUEST['pushover_retry'] : null;
-        $pushover_expire = isset($_REQUEST['pushover_expire']) ? $_REQUEST['pushover_expire'] : null;
-        $pushover_sound = !empty($_REQUEST['pushover_sound']) ? $_REQUEST['pushover_sound'] : null;
-        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
-        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->updateUser($_REQUEST['user_id'], $_REQUEST['username'], $password, $_REQUEST['first_name'], $last_name, $pushover_user, $pushover_token, $pushover_priority, $pushover_retry, $pushover_expire, $pushover_sound, $_REQUEST['role'], $begin, $end);
-        $log['user_id'] = $_REQUEST['user_id'];
+      if (!empty($_POST['user_id']) && !empty($_POST['username']) && !empty($_POST['first_name']) && !empty($_POST['role'])) {
+        $password = !empty($_POST['password']) ? $_POST['password'] : null;
+        $last_name = !empty($_POST['last_name']) ? $_POST['last_name'] : null;
+        $pushover_user = !empty($_POST['pushover_user']) ? $_POST['pushover_user'] : null;
+        $pushover_token = !empty($_POST['pushover_token']) ? $_POST['pushover_token'] : null;
+        $pushover_priority = isset($_POST['pushover_priority']) ? $_POST['pushover_priority'] : null;
+        $pushover_retry = isset($_POST['pushover_retry']) ? $_POST['pushover_retry'] : null;
+        $pushover_expire = isset($_POST['pushover_expire']) ? $_POST['pushover_expire'] : null;
+        $pushover_sound = !empty($_POST['pushover_sound']) ? $_POST['pushover_sound'] : null;
+        $begin = !empty($_POST['begin']) ? $_POST['begin'] : null;
+        $end = !empty($_POST['end']) ? $_POST['end'] : null;
+        $output['success'] = $continuum->updateUser($_POST['user_id'], $_POST['username'], $password, $_POST['first_name'], $last_name, $pushover_user, $pushover_token, $pushover_priority, $pushover_retry, $pushover_expire, $pushover_sound, $_POST['role'], $begin, $end);
+        $log['user_id'] = $_POST['user_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -118,10 +119,10 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateEdge':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['edge_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['api_key'])) {
-        $color = !empty($_REQUEST['color']) ? $_REQUEST['color'] : null;
-        $output['success'] = $continuum->updateEdge($_REQUEST['edge_id'], $_REQUEST['name'], $color, $_REQUEST['url'], $_REQUEST['api_key']);
-        $log['edge_id'] = $_REQUEST['edge_id'];
+      if (!empty($_POST['edge_id']) && !empty($_POST['name']) && !empty($_POST['url']) && !empty($_POST['api_key'])) {
+        $color = !empty($_POST['color']) ? $_POST['color'] : null;
+        $output['success'] = $continuum->updateEdge($_POST['edge_id'], $_POST['name'], $color, $_POST['url'], $_POST['api_key']);
+        $log['edge_id'] = $_POST['edge_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -135,9 +136,9 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateMonitor':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['monitor_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['url']) && !empty($_REQUEST['method']) && !empty($_REQUEST['edges']) && !empty($_REQUEST['interval']) && !empty($_REQUEST['timeout']) && isset($_REQUEST['allow_redirects']) && isset($_REQUEST['verify'])) {
-        $output['success'] = $continuum->updateMonitor($_REQUEST['monitor_id'], $_REQUEST['name'], $_REQUEST['url'], $_REQUEST['method'], $_REQUEST['edges'], $_REQUEST['interval'], $_REQUEST['timeout'], $_REQUEST['allow_redirects'], $_REQUEST['verify']);
-        $log['monitor_id'] = $_REQUEST['monitor_id'];
+      if (!empty($_POST['monitor_id']) && !empty($_POST['name']) && !empty($_POST['url']) && !empty($_POST['method']) && !empty($_POST['edges']) && !empty($_POST['interval']) && !empty($_POST['timeout']) && isset($_POST['allow_redirects']) && isset($_POST['verify'])) {
+        $output['success'] = $continuum->updateMonitor($_POST['monitor_id'], $_POST['name'], $_POST['url'], $_POST['method'], $_POST['edges'], $_POST['interval'], $_POST['timeout'], $_POST['allow_redirects'], $_POST['verify']);
+        $log['monitor_id'] = $_POST['monitor_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -151,11 +152,11 @@ switch ($_REQUEST['func']) {
     break;
   case 'updateApp':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['app_id']) && !empty($_REQUEST['name']) && !empty($_REQUEST['token'])) {
-        $begin = !empty($_REQUEST['begin']) ? $_REQUEST['begin'] : null;
-        $end = !empty($_REQUEST['end']) ? $_REQUEST['end'] : null;
-        $output['success'] = $continuum->updateApp($_REQUEST['app_id'], $_REQUEST['name'], $_REQUEST['token'], $begin, $end);
-        $log['app_id'] = $_REQUEST['app_id'];
+      if (!empty($_POST['app_id']) && !empty($_POST['name']) && !empty($_POST['token'])) {
+        $begin = !empty($_POST['begin']) ? $_POST['begin'] : null;
+        $end = !empty($_POST['end']) ? $_POST['end'] : null;
+        $output['success'] = $continuum->updateApp($_POST['app_id'], $_POST['name'], $_POST['token'], $begin, $end);
+        $log['app_id'] = $_POST['app_id'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
@@ -169,11 +170,11 @@ switch ($_REQUEST['func']) {
     break;
   case 'modifyObject':
     if ($continuum->isValidSession() && $continuum->isAdmin()) {
-      if (!empty($_REQUEST['action']) && !empty($_REQUEST['type']) && !empty($_REQUEST['value'])) {
-        $output['success'] = $continuum->modifyObject($_REQUEST['action'], $_REQUEST['type'], $_REQUEST['value']);
-        $log['action'] = $_REQUEST['action'];
-        $log['type'] = $_REQUEST['type'];
-        $log['value'] = $_REQUEST['value'];
+      if (!empty($_POST['action']) && !empty($_POST['type']) && !empty($_POST['value'])) {
+        $output['success'] = $continuum->modifyObject($_POST['action'], $_POST['type'], $_POST['value']);
+        $log['action'] = $_POST['action'];
+        $log['type'] = $_POST['type'];
+        $log['value'] = $_POST['value'];
       } else {
         header('HTTP/1.1 400 Bad Request');
         $output['success'] = false;
