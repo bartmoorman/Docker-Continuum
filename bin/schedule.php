@@ -18,6 +18,7 @@ while (true) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: {$edge['api_key']}"]);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['url' => $monitor['url'], 'method' => $monitor['method'], 'timeout' => $monitor['timeout'], 'allow_redirects' => (bool) $monitor['allow_redirects'], 'verify' => (bool) $monitor['verify']]));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_IPRESOLVE, getenv('CURL_RESOLVE_IPV6') ? CURL_IPRESOLVE_V6 : CURL_IPRESOLVE_V4);
             if (($result = curl_exec($ch)) !== false && curl_getinfo($ch, CURLINFO_RESPONSE_CODE) == 200) {
               $json = json_decode($result, true);
               $continuum->putReading($edge['edge_id'], $monitor['monitor_id'], array_key_exists('total_seconds', $json) ? $json['total_seconds'] : null, array_key_exists('status_code', $json) ? $json['status_code'] : null, $json['reason']);
