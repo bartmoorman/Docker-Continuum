@@ -35,7 +35,7 @@ foreach ($continuum->getObjects('monitors') as $monitor) {
   echo "            <td>{$monitor['monitor_id']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['name']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['url']}</td>" . PHP_EOL;
-  echo "            <td>{$monitor['method']}</td>" . PHP_EOL;
+  echo "            <td class='text-uppercase'>{$monitor['method']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['edges']}</td>" . PHP_EOL;
   echo "            <td>{$monitor['interval']}m</td>" . PHP_EOL;
   echo "            <td>{$monitor['timeout']}s</td>" . PHP_EOL;
